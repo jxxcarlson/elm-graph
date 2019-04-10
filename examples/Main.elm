@@ -26,13 +26,13 @@ data2 =
 
 data3 : List (Float, Float)
 data3 =
-    [(0,0), (10, 10), (20,0), (30,10), (40,0)]
+    [(-20, 0), (-10,-10), (0,0), (10, 10), (20,0), (30,15), (40,0), (50,-15), (60, 0)]
 
 
 graphAttributes =
     { dx = 10
     , color = "blue"
-    , graphHeight = 200
+    , graphHeight = 100
     , graphWidth = 400
     }
 
@@ -86,19 +86,20 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    Element.layout [] (mainColumn model)
+    Element.layout [ ] (mainColumn model)
 
 
 {-| This paragraph is where all the action is -}
 mainColumn : Model -> Element Msg
 mainColumn model =
-    column mainColumnStyle
-        [ column [ centerX, spacing 20 ]
+      column mainColumnStyle
+        [ column [ centerX, centerY, spacing 20, padding 40, Background.color (rgb255 240 240 240) ]
             [ title "Bar Graph Demo"
             , LineGraph.asHtml graphAttributes data3 |> Element.html
            -- , BarGraph.asHtml graphAttributes data |> Element.html
             ]
         ]
+
 
 title : String -> Element msg
 title str =
@@ -107,9 +108,10 @@ title str =
 
 
 mainColumnStyle =
-    [ centerX
-    , centerY
-    , Background.color (rgb255 240 240 240)
+    [
+     height fill
+    , width fill
+    , Background.color (rgb255 80 80 80)
     , paddingXY 20 20
     ]
 
