@@ -1,6 +1,6 @@
-module BarGraph exposing (GraphAttributes, asHtml, asSVG)
+module BarChart exposing (GraphAttributes, asHtml, asSVG)
 
-{-| BarGraph displays a bar graph of data presented as a list of floats:
+{-| BarChart displays a bar graph of data presented as a list of floats:
 
 @docs GraphAttributes, asHtml, asSVG
 
@@ -8,12 +8,18 @@ module BarGraph exposing (GraphAttributes, asHtml, asSVG)
 
 {- exposing (GraphAttributes, asHtml, asSVG) -}
 
-import Element exposing (..)
+
 import Html exposing (Html)
 import Svg exposing (Svg, g, line, rect, svg, text, text_)
 import Svg.Attributes as SA
 
 
+{-| A GraphAttributes value defines the size on
+the screen occupied by the graph, the color of the
+line, and the distance from the leading edge of
+one bar to the next.
+
+-}
 type alias GraphAttributes =
     { dx : Float
     , color : String
@@ -22,6 +28,10 @@ type alias GraphAttributes =
     }
 
 
+{-| Render a list of numbers to Html as a bar chart using the parameters
+of GraphAttributes and DataWindow.  If desired, the data window
+can be set from the list of points using getDataWindow.
+-}
 asHtml : GraphAttributes -> List Float -> Html msg
 asHtml ga data =
     svg
@@ -33,6 +43,10 @@ asHtml ga data =
         [ asSVG ga data ]
 
 
+{-| Render a list of numbers to Svg as a bar chart using the parameters
+of GraphAttributes and DataWindow.  If desired, the data window
+can be set from the list of points using getDataWindow.
+-}
 asSVG : GraphAttributes -> List Float -> Svg msg
 asSVG gA data =
     let

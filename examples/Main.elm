@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-{- This is a demo of the BarGraph package
+{- This is a demo of the BarChart package
 -}
 
 import Browser
@@ -8,8 +8,8 @@ import Html exposing (Html)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
--- import BarGraph
-import LineGraph
+-- import BarChart
+import LineChart
 
 
 --
@@ -29,9 +29,9 @@ data3 =
     [(-20, 0), (-10,-10), (0,0), (10, 10), (20,0), (30,15), (40,0), (50,-15), (60, 0)]
 
 
+
 graphAttributes =
-    { dx = 10
-    , color = "blue"
+    {  color = "blue"
     , graphHeight = 100
     , graphWidth = 400
     }
@@ -95,8 +95,8 @@ mainColumn model =
       column mainColumnStyle
         [ column [ centerX, centerY, spacing 20, padding 40, Background.color (rgb255 240 240 240) ]
             [ title "Bar Graph Demo"
-            , LineGraph.asHtml graphAttributes data3 |> Element.html
-           -- , BarGraph.asHtml graphAttributes data |> Element.html
+            , LineChart.asHtml graphAttributes (LineChart.getDataWindow data3) data3 |> Element.html
+           -- , BarChart.asHtml graphAttributes data |> Element.html
             ]
         ]
 

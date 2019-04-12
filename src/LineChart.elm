@@ -1,30 +1,38 @@
-module LineGraph exposing(GraphAttributes, asHtml, asSVG)
+module LineChart exposing(GraphAttributes, DataWindow, getDataWindow,  asHtml, asSVG)
 
 
 
-{- (GraphAttributes, asHtml, asSVG) -}
+{-| LineChart displays a line graph of data presented as a list of floats:
 
-{-| BarGraph displays a bar graph of data presented as a list of floats:
-
-@docs GraphAttributes, asHtml, asSVG
+@docs GraphAttributes, DataWindow, getDataWindow,  asHtml, asSVG
 
 -}
 
-{- exposing (GraphAttributes, asHtml, asSVG) -}
 
-import Element exposing (..)
+
+
 import Html exposing (Html)
 import Svg exposing (Svg, g, line, rect, svg, text, text_)
 import Svg.Attributes as SA
 
 
+type alias Point = (Float, Float)
+type alias Segment = (Point, Point)
+
+
+{-| A GraphAttributes value defines the size on
+the screen occupied by the graph and the color of the
+line.
+
+-}
 type alias GraphAttributes =
-    { dx : Float
-    , color : String
+    { color : String
     , graphHeight : Float
     , graphWidth : Float
     }
 
+{-| A DataWindow is a rectangle containing the data.
+-}
 type alias DataWindow =
     { xMax : Float
     , xMin : Float
@@ -39,29 +47,35 @@ type alias ScaleFactor =
     }
 
 
-
-asHtml : GraphAttributes -> List (Float, Float) -> Html msg
-asHtml ga data =
+{-| Render a list of points to Html as a line chart using the parameters
+of GraphAttributes and DataWindow.  If desired, the data window
+can be set from the list of points using getDataWindow.
+-}
+asHtml : GraphAttributes -> DataWindow -> List Point -> Html msg
+asHtml ga dw data =
     svg
         [ SA.transform "scale(1,-1)"
         , SA.height <| String.fromFloat (ga.graphHeight + 40)
         , SA.width <| String.fromFloat (ga.graphWidth + 50)
         , SA.viewBox <| "-40 -20 " ++ String.fromFloat (ga.graphWidth + 50) ++ " " ++ String.fromFloat (ga.graphHeight + 40)
         ]
-        [ asSVG ga data ]
+        [ asSVG ga dw data ]
 
 
-asSVG : GraphAttributes -> List (Float, Float) -> Svg msg
-asSVG gA data =
+{-| Render a list of points to Svg as a line chart using the parameters
+of GraphAttributes and DataWindow.  If desired, the data window
+can be set from the list of points using getDataWindow.
+-}
+asSVG : GraphAttributes -> DataWindow -> List (Float, Float) -> Svg msg
+asSVG gA dw data =
       g []
-        [svgOfData gA data]
+        [svgOfData gA dw data]
 
 
 
-svgOfData : GraphAttributes -> List (Float, Float) -> Svg msg
-svgOfData ga data =
+svgOfData : GraphAttributes -> DataWindow -> List (Float, Float) -> Svg msg
+svgOfData ga dw data =
     let
-      dw = getDataWindow data
       scaleFactor = getScaleFactor dw ga
       theData =
           data
@@ -77,7 +91,7 @@ svgOfData ga data =
                 |> segmentsToSVG
 
       ordinate =
-        [(0, dw.yMin), (0, dw.yMax)]
+        [(dw.xMin, dw.yMin), (dw.xMin, dw.yMax)]
               |> translate (-dw.xMin, dw.yMax)
               |> rescale scaleFactor
               |> segments
@@ -100,10 +114,6 @@ translate (dx, dy) data =
 
 
 
-type alias Point = (Float, Float)
-type alias Segment = (Point, Point)
-
-
 
 segments : List a -> List (a, a)
 segments list =
@@ -112,7 +122,10 @@ segments list =
     in
     List.map2 Tuple.pair (List.take (n - 1) list ) (List.drop 1 list)
 
+{-| Create a DataWindow from a list of points. This will
+be the smallest rectangle containing the data.
 
+-}
 getDataWindow : List Point -> DataWindow
 getDataWindow pointList =
     let
