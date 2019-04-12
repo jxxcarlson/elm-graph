@@ -121,6 +121,7 @@ asSVGWithDataWindow dw ga data =
     let
       scaleFactor = getScaleFactor dw ga
 
+      render : List Point -> Svg msg
       render data_ =
           data_
             |> translate (-dw.xMin, dw.yMax)
@@ -128,6 +129,7 @@ asSVGWithDataWindow dw ga data =
             |> segments
             |> segmentsToSVG ga.options
 
+      renderPlain : List Point -> Svg msg
       renderPlain data_ =
                 data_
                   |> translate (-dw.xMin, dw.yMax)
@@ -143,12 +145,16 @@ asSVGWithDataWindow dw ga data =
 
       boundingBox_ = boundingBox ga.options dw |> renderPlain
 
-      yTickMarks_ = makeYTickMarks scaleFactor dw (yTickmarks ga.options) |> List.map renderPlain |> (\x -> g [] x)
+      xTickMarks_ = makeXTickMarks scaleFactor renderPlain dw (xTickmarks ga.options)
 
-      xTickMarks_ = makeXTickMarks scaleFactor  dw (xTickmarks ga.options) |> List.map renderPlain |> (\x -> g [] x)
+      yTickMarks_ = makeYTickMarks scaleFactor renderPlain dw (yTickmarks ga.options)
+
+      xLabels = makeXLabels scaleFactor dw (xTickmarks ga.options)
+
+      yLabels = makeYLabels scaleFactor dw (yTickmarks ga.options)
 
     in
-      g [] [theData, abscissa, ordinate, boundingBox_, xTickMarks_, yTickMarks_]
+      g [] [theData, abscissa, ordinate, boundingBox_, xTickMarks_, yTickMarks_, xLabels, yLabels]
 
 
 rescale : (Float, Float) -> List Point -> List Point
@@ -267,35 +273,77 @@ makeYTickMark : Float -> DataWindow -> Float -> List Point
 makeYTickMark kx dw y =
     [(dw.xMin,y), (dw.xMin - (tickMarkLength/kx),y)]
 
+makeYLabel : (Float, Float) -> DataWindow -> Float -> Svg msg
+makeYLabel (kx,ky) dw y =
+    let
+        dy = String.fromFloat (ky*(y - dw.yMin) - 3)
+        label = String.fromFloat <| roundTo 1 y
+    in
+    text_ [ SA.transform <| "translate(0," ++ dy ++ ") scale(1,-1)"
+           , SA.x <| String.fromFloat -30
+           , SA.y <| "0"
+           , SA.fontSize "9px"]
+         [ text label ]
 
--- text_ [ SA.transform <| "translate(0," ++ dy ++ ") scale(1,-1)", SA.x <| String.fromFloat -40, SA.y <| "0" ] [ text label ]
-
-
-
-
-makeYTickMarks : (Float, Float) -> DataWindow -> Int -> List (List Point)
-makeYTickMarks (kx,ky) dw n =
+makeXLabels : (Float, Float) -> DataWindow -> Int -> Svg msg
+makeXLabels (kx,ky) dw n =
     case n == 0 of
-        True -> []
+            True -> g [] []
+            False ->
+                List.range 0 (n - 1)
+                  |> List.map (\k -> dw.xMin + (toFloat k) * (dw.xMax - dw.xMin)/(toFloat (n - 1)))
+                  |> List.map (makeXLabel (kx,ky) dw)
+                  |> (\x -> g [] x )
+
+makeXLabel : (Float, Float) -> DataWindow -> Float -> Svg msg
+makeXLabel (kx,ky) dw x =
+    let
+        dx = String.fromFloat (kx*(x - dw.xMin))
+        label = String.fromFloat <| roundTo 1 x
+    in
+    text_ [ SA.transform <| "translate(" ++ dx ++ ",0) scale(1,-1)"
+           , SA.x <| "-8"
+           , SA.y <| "20"
+           , SA.fontSize "9px"]
+         [ text label ]
+
+makeYLabels : (Float, Float) -> DataWindow -> Int -> Svg msg
+makeYLabels (kx,ky) dw n =
+    case n == 0 of
+            True -> g [] []
+            False ->
+                List.range 0 (n - 1)
+                  |> List.map (\k -> dw.yMin + (toFloat k) * (dw.yMax - dw.yMin)/(toFloat (n - 1)))
+                  |> List.map (makeYLabel (kx,ky) dw)
+                  |> (\x -> g [] x )
+
+makeYTickMarks : (Float, Float) -> (List Point -> Svg msg) -> DataWindow -> Int -> Svg msg
+makeYTickMarks (kx,ky) render dw n =
+    case n == 0 of
+        True -> []  |> List.map render |> (\x -> g [] x)
         False ->
             List.range 0 (n - 1)
               |> List.map (\k -> (toFloat k) * (dw.yMax - dw.yMin)/(toFloat (n - 1)))
               |> List.map (makeYTickMark kx dw)
               |> List.map (translate (0, -dw.yMax))
+              |> List.map render
+              |> (\x -> g [] x )
 
 makeXTickMark : Float -> DataWindow -> Float -> List Point
 makeXTickMark ky dw x =
     [(x, dw.yMin), (x, dw.yMin - (tickMarkLength/ky))]
 
-makeXTickMarks : (Float, Float) -> DataWindow -> Int -> List (List Point)
-makeXTickMarks (kx, ky) dw n =
+makeXTickMarks : (Float, Float) -> (List Point -> Svg msg) -> DataWindow -> Int -> Svg msg
+makeXTickMarks (kx, ky) render dw n =
     case n == 0 of
-        True -> []
+        True -> [] |> List.map render |> (\x -> g [] x)
         False ->
             List.range 0 (n - 1)
               |> List.map (\k -> (toFloat k) * (dw.xMax - dw.xMin)/(toFloat (n - 1)))
               |> List.map (makeXTickMark (ky) dw)
               |> List.map (translate (dw.xMin, 0))
+              |> List.map render
+              |> (\x -> g [] x)
 --
 -- UTILITY
 --
