@@ -10,6 +10,7 @@ import Element.Background as Background
 import Element.Font as Font
 import Chart exposing(Option(..), barChart, lineChart)
 
+
 --
 -- DATA
 --
@@ -30,10 +31,9 @@ graphAttributes =
     }
 
 barGraphAttributes =
-    {   barHeight = 100
+    {   graphHeight = 100
       , graphWidth = 400
-      , color = "rgb(200,0,0)"
-      , dx = 15
+      , options = [Color "rgb(200,0,0)", DeltaX 15]
     }
 --
 -- APP
@@ -96,6 +96,7 @@ mainColumn model =
             [ title "Chart Demo"
              , row [] [ lineChart graphAttributes data |> Element.html ]
              , row [] [ barChart barGraphAttributes data2 |> Element.html ]
+
             ]
         ]
 

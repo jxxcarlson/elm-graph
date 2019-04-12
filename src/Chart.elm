@@ -27,7 +27,8 @@ line, place tick marks on the x and y axes.  For example, one could say options 
 
 The function Chart.asSVG produces SVG output.  You may not need this, but it is there if you do.w
 
-@docs lineChart, lineChartWithDataWindow, barChart,  Point, DataWindow, getDataWindow, GraphAttributes, Option(..)
+@docs lineChart, lineChartWithDataWindow, barChart,  Point, DataWindow, getDataWindow, GraphAttributes, Option
+
 
 -}
 
@@ -36,14 +37,6 @@ import Html exposing (Html)
 import Svg exposing (Svg, g, line, rect, svg, text, text_)
 import Svg.Attributes as SA
 
-{-|  The data to be graphed by Chart.asHtml is
-a List Point.
-
--}
-type alias Point = (Float, Float)
-
-
-type alias Segment = (Point, Point)
 
 
 {-| A GraphAttributes value defines the size on
@@ -68,6 +61,7 @@ type Option =
   Color String
   | XTickmarks Int
   | YTickmarks Int
+  | DeltaX Float
 
 
 {-| A DataWindow is a rectangle which determines
@@ -78,7 +72,20 @@ type alias DataWindow =
     , xMin : Float
     , yMax : Float
     , yMin : Float
-    }
+  }
+
+
+
+{-|  The data to be graphed by Chart.asHtml is
+a List Point.
+
+-}
+type alias Point = (Float, Float)
+
+
+type alias Segment = (Point, Point)
+
+
 
 type alias ScaleFactor =
     {
@@ -183,13 +190,13 @@ type alias BarGraphAttributes =
 of GraphAttributes and DataWindow.  If desired, the data window
 can be set from the list of points using getDataWindow.
 -}
-barChart : BarGraphAttributes -> List Float -> Html msg
+barChart : GraphAttributes -> List Float -> Html msg
 barChart ga data =
     svg
         [ SA.transform "scale(1,-1)"
-        , SA.height <| String.fromFloat (ga.barHeight + 40)
+        , SA.height <| String.fromFloat (ga.graphHeight + 40)
         , SA.width <| String.fromFloat (ga.graphWidth + 40)
-        , SA.viewBox <| "-60 -20 " ++ String.fromFloat (ga.graphWidth + 40) ++ " " ++ String.fromFloat (ga.barHeight + 20)
+        , SA.viewBox <| "-60 -20 " ++ String.fromFloat (ga.graphWidth + 40) ++ " " ++ String.fromFloat (ga.graphHeight + 20)
         ]
         [ barChartAsSVG ga data ]
 
@@ -198,16 +205,16 @@ barChart ga data =
 of GraphAttributes and DataWindow.  If desired, the data window
 can be set from the list of points using getDataWindow.
 -}
-barChartAsSVG : BarGraphAttributes -> List Float -> Svg msg
+barChartAsSVG : GraphAttributes -> List Float -> Svg msg
 barChartAsSVG ga data =
     let
             barWidth =
-                0.8 * ga.dx
+                0.8 * (deltaX ga.options)
 
             gbar =
-                \( x, y ) -> barRect ga.color barWidth ga.barHeight x y
+                \( x, y ) -> barRect (lineColor ga.options) barWidth ga.graphHeight x y
     in
-      List.map gbar (prepare ga.dx data) |> g []
+      List.map gbar (prepare (deltaX ga.options) data) |> g []
 
 
 prepare : Float -> List Float -> List ( Float, Float )
@@ -319,7 +326,15 @@ segmentsToSVG options  segmentList =
 -- OPTION HANDLING
 --
 
+deltaX : List Option -> Float
+deltaX options =
+    findMap deltaX_ options |> Maybe.withDefault 15
 
+deltaX_ : Option -> Maybe Float
+deltaX_ option =
+    case option of
+        DeltaX dx -> Just dx
+        _ -> Nothing
 
 lineColor : List Option -> String
 lineColor options =
