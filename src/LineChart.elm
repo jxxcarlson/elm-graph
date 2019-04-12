@@ -1,5 +1,5 @@
 module LineChart exposing(Point, GraphAttributes, Option(..), DataWindow
-  , getDataWindow,  asHtml, asSVG, asHtmlWithDataWindow, asSVGWithDataWindow, xTickmarks)
+  , getDataWindow,  asHtml, asSVG, asHtmlWithDataWindow, asSVGWithDataWindow)
 
 
 
@@ -54,8 +54,13 @@ type alias GraphAttributes =
     , options : List Option
     }
 
-{-| Use a List Option to customize the line chart.
- For example, you can set the options to [Color "blue"].-}
+{-| Use the options field to customize the line chart.
+Examples: (1) [Color "blue"] makes the charted line
+ blue (2) [Color "blue", XTickmarks 10, YTickmarks 5]
+  places 10 tick marks along the x-axis and 5
+ tick marks along the y-axis, (3) options = [ ]
+ produces a bare-bones graph.
+-}
 type Option =
   Color String
   | XTickmarks Int
@@ -142,14 +147,9 @@ asSVGWithDataWindow dw ga data =
 
       xTickMarks_ = makeXTickMarks scaleFactor  dw (xTickmarks ga.options) |> List.map renderPlain |> (\x -> g [] x)
 
---      t1 = [(dw.xMin,0), (dw.xMin - 1,0)]  |> renderPlain
---
---      t2 = [(dw.xMin,dw.yMax), (dw.xMin - 1, dw.yMax)]  |> renderPlain
-
     in
       g [] [theData, abscissa, ordinate, boundingBox_, xTickMarks_, yTickMarks_]
 
--- placeYTickMark ga 0 "0", placeYTickMark ga 1 "T
 
 rescale : (Float, Float) -> List Point -> List Point
 rescale (kx, ky) data =
@@ -261,9 +261,17 @@ yTickmarks_ option =
         _ -> Nothing
 
 
+tickMarkLength = 7.5
+
 makeYTickMark : Float -> DataWindow -> Float -> List Point
 makeYTickMark kx dw y =
-    [(dw.xMin,y), (dw.xMin - (0.25*kx),y)]
+    [(dw.xMin,y), (dw.xMin - (tickMarkLength/kx),y)]
+
+
+-- text_ [ SA.transform <| "translate(0," ++ dy ++ ") scale(1,-1)", SA.x <| String.fromFloat -40, SA.y <| "0" ] [ text label ]
+
+
+
 
 makeYTickMarks : (Float, Float) -> DataWindow -> Int -> List (List Point)
 makeYTickMarks (kx,ky) dw n =
@@ -277,7 +285,7 @@ makeYTickMarks (kx,ky) dw n =
 
 makeXTickMark : Float -> DataWindow -> Float -> List Point
 makeXTickMark ky dw x =
-    [(x, dw.yMin), (x, dw.yMin - ky)]
+    [(x, dw.yMin), (x, dw.yMin - (tickMarkLength/ky))]
 
 makeXTickMarks : (Float, Float) -> DataWindow -> Int -> List (List Point)
 makeXTickMarks (kx, ky) dw n =
@@ -286,7 +294,7 @@ makeXTickMarks (kx, ky) dw n =
         False ->
             List.range 0 (n - 1)
               |> List.map (\k -> (toFloat k) * (dw.xMax - dw.xMin)/(toFloat (n - 1)))
-              |> List.map (makeXTickMark (0.5*ky) dw)
+              |> List.map (makeXTickMark (ky) dw)
               |> List.map (translate (dw.xMin, 0))
 --
 -- UTILITY
