@@ -1,22 +1,45 @@
-module LineChart exposing(GraphAttributes, DataWindow, getDataWindow,  asHtml, asSVG)
+module LineChart exposing(Point, GraphAttributes, Option(..), DataWindow
+  , getDataWindow,  asHtml, asSVG, asHtmlWithDataWindow, asSVGWithDataWindow, xTickmarks)
 
 
 
-{-| LineChart displays a line graph of data presented as a list of floats:
+{-| LineChart displays a line graph of data presented as a list of pairs of floats.
 
-@docs GraphAttributes, DataWindow, getDataWindow,  asHtml, asSVG
+    LineChart.asHtml : GraphAttributes -> List Point -> Html msg
+
+**Example:**  Let
+
+    data =
+        [(0,0), (10, 10), (20,0), (30,15), (40,0)]
+
+    graphAttributes =
+         {   graphHeight = 100
+           , graphWidth = 400
+           , options = [ ]
+         }
+
+    LineChart.asHtml graphAttributes data
+
+For more control over the part of the data displayed, use LineChart.asHtmlWithDataWindow.
+To customize the appearance of the graph, use the options field -- change the color of the
+line, place tick marks on the x and y axes.  For example, one could say options = [Color "blue"].
+
+@docs Point,  GraphAttributes, Option, DataWindow, getDataWindow,  asHtml, asSVG, asHtmlWithDataWindow, asSVGWithDataWindow
 
 -}
-
-
 
 
 import Html exposing (Html)
 import Svg exposing (Svg, g, line, rect, svg, text, text_)
 import Svg.Attributes as SA
 
+{-|  The data to be graphed by LineChart.asHtml is
+a List Point.
 
+-}
 type alias Point = (Float, Float)
+
+
 type alias Segment = (Point, Point)
 
 
@@ -26,12 +49,21 @@ line.
 
 -}
 type alias GraphAttributes =
-    { color : String
-    , graphHeight : Float
+    { graphHeight : Float
     , graphWidth : Float
+    , options : List Option
     }
 
-{-| A DataWindow is a rectangle containing the data.
+{-| Use a List Option to customize the line chart.
+ For example, you can set the options to [Color "blue"].-}
+type Option =
+  Color String
+  | XTickmarks Int
+  | YTickmarks Int
+
+
+{-| A DataWindow is a rectangle which determines
+the x and y ranges of the data to be displayed..
 -}
 type alias DataWindow =
     { xMax : Float
@@ -48,58 +80,76 @@ type alias ScaleFactor =
 
 
 {-| Render a list of points to Html as a line chart using the parameters
-of GraphAttributes and DataWindow.  If desired, the data window
-can be set from the list of points using getDataWindow.
+of GraphAttributes.
 -}
-asHtml : GraphAttributes -> DataWindow -> List Point -> Html msg
-asHtml ga dw data =
+asHtml : GraphAttributes -> List Point -> Html msg
+asHtml ga data =
+  asHtmlWithDataWindow (getDataWindow data) ga data
+
+
+{-| Render a list of points to SVG as a line chart using the parameters
+of GraphAttributes.
+-}
+asSVG : GraphAttributes ->  List Point -> Svg msg
+asSVG ga data =
+   asSVGWithDataWindow (getDataWindow data) ga data
+
+{-| Render a list of points to Html as a line chart using the parameters
+of GraphAttributes and DataWindow.
+-}
+asHtmlWithDataWindow : DataWindow -> GraphAttributes ->List Point -> Html msg
+asHtmlWithDataWindow dw ga  data =
     svg
         [ SA.transform "scale(1,-1)"
         , SA.height <| String.fromFloat (ga.graphHeight + 40)
         , SA.width <| String.fromFloat (ga.graphWidth + 50)
         , SA.viewBox <| "-40 -20 " ++ String.fromFloat (ga.graphWidth + 50) ++ " " ++ String.fromFloat (ga.graphHeight + 40)
         ]
-        [ asSVG ga dw data ]
+        [ asSVGWithDataWindow dw ga data ]
 
 
 {-| Render a list of points to Svg as a line chart using the parameters
-of GraphAttributes and DataWindow.  If desired, the data window
-can be set from the list of points using getDataWindow.
+of GraphAttributes and DataWindow.
 -}
-asSVG : GraphAttributes -> DataWindow -> List (Float, Float) -> Svg msg
-asSVG gA dw data =
-      g []
-        [svgOfData gA dw data]
-
-
-
-svgOfData : GraphAttributes -> DataWindow -> List (Float, Float) -> Svg msg
-svgOfData ga dw data =
+asSVGWithDataWindow: DataWindow -> GraphAttributes ->  List Point -> Svg msg
+asSVGWithDataWindow dw ga data =
     let
       scaleFactor = getScaleFactor dw ga
-      theData =
-          data
-                |> translate (-dw.xMin, dw.yMax)
-                |> rescale scaleFactor
-                |> segments
-                |> segmentsToSVG
-      abscissa =
-          [(dw.xMin,0), (dw.xMax,0)]
-                |> translate (-dw.xMin, dw.yMax)
-                |> rescale scaleFactor
-                |> segments
-                |> segmentsToSVG
 
-      ordinate =
-        [(dw.xMin, dw.yMin), (dw.xMin, dw.yMax)]
-              |> translate (-dw.xMin, dw.yMax)
-              |> rescale scaleFactor
-              |> segments
-              |> segmentsToSVG
+      render data_ =
+          data_
+            |> translate (-dw.xMin, dw.yMax)
+            |> rescale scaleFactor
+            |> segments
+            |> segmentsToSVG ga.options
+
+      renderPlain data_ =
+                data_
+                  |> translate (-dw.xMin, dw.yMax)
+                  |> rescale scaleFactor
+                  |> segments
+                  |> segmentsToSVG []
+
+      theData = data |> render
+
+      abscissa = [(dw.xMin,0), (dw.xMax,0)]  |> renderPlain
+
+      ordinate = [(dw.xMin, dw.yMin), (dw.xMin, dw.yMax)]  |> renderPlain
+
+      boundingBox_ = boundingBox ga.options dw |> renderPlain
+
+      yTickMarks_ = makeYTickMarks scaleFactor dw (yTickmarks ga.options) |> List.map renderPlain |> (\x -> g [] x)
+
+      xTickMarks_ = makeXTickMarks scaleFactor  dw (xTickmarks ga.options) |> List.map renderPlain |> (\x -> g [] x)
+
+--      t1 = [(dw.xMin,0), (dw.xMin - 1,0)]  |> renderPlain
+--
+--      t2 = [(dw.xMin,dw.yMax), (dw.xMin - 1, dw.yMax)]  |> renderPlain
 
     in
-      g [] [theData, abscissa, ordinate]
+      g [] [theData, abscissa, ordinate, boundingBox_, xTickMarks_, yTickMarks_]
 
+-- placeYTickMark ga 0 "0", placeYTickMark ga 1 "T
 
 rescale : (Float, Float) -> List Point -> List Point
 rescale (kx, ky) data =
@@ -109,6 +159,13 @@ translate : (Float, Float) -> List Point -> List Point
 translate (dx, dy) data =
     List.map (\(x,y) -> (x + dx, y + dy)) data
 
+
+boundingBox : List Option -> DataWindow -> List Point
+boundingBox options dw =
+    case (xTickmarks options, yTickmarks options) of
+        (0, 0) -> [ ]
+        (_, _) ->
+          [(dw.xMin, dw.yMin), (dw.xMax, dw.yMin), (dw.xMax, dw.yMax), (dw.xMin, dw.yMax), (dw.xMin, dw.yMin)]
 
 -- BASIC SVG ELEMENT
 
@@ -152,22 +209,98 @@ getScaleFactor dataWindow gA =
 
 
 
-segmentToSVG : Segment -> Svg msg
-segmentToSVG ((x1, y1), (x2, y2)) =
+segmentToSVG : List Option -> Segment -> Svg msg
+segmentToSVG options ((x1, y1), (x2, y2)) =
         line [ SA.x1 (String.fromFloat x1)
              , SA.y1 (String.fromFloat y1)
              , SA.x2 (String.fromFloat x2)
              , SA.y2 (String.fromFloat y2)
-             , SA.stroke "rgb(80,80,80)"
+             , SA.stroke <| lineColor options
              , SA.strokeWidth "1" ] []
 
-segmentsToSVG : List Segment -> Svg msg
-segmentsToSVG segmentList =
-    segmentList |> List.map segmentToSVG |> (\x -> g [] x)
 
+segmentsToSVG : List Option -> List Segment -> Svg msg
+segmentsToSVG options  segmentList =
+    segmentList |> List.map (segmentToSVG options) |> (\x -> g [] x)
+
+--
+-- OPTION HANDLING
+--
+
+
+
+lineColor : List Option -> String
+lineColor options =
+    findMap lineColor_ options |> Maybe.withDefault "rgb(40, 40, 40)"
+
+lineColor_ : Option -> Maybe String
+lineColor_ option =
+    case option of
+        Color str -> Just str
+        _ -> Nothing
+
+
+xTickmarks : List Option -> Int
+xTickmarks options =
+    findMap xTickmarks_ options |> Maybe.withDefault 0
+
+xTickmarks_ : Option -> Maybe Int
+xTickmarks_ option =
+    case option of
+        XTickmarks k -> Just k
+        _ -> Nothing
+
+yTickmarks : List Option -> Int
+yTickmarks options =
+    findMap yTickmarks_ options |> Maybe.withDefault 0
+
+yTickmarks_ : Option -> Maybe Int
+yTickmarks_ option =
+    case option of
+        YTickmarks k -> Just k
+        _ -> Nothing
+
+
+makeYTickMark : Float -> DataWindow -> Float -> List Point
+makeYTickMark kx dw y =
+    [(dw.xMin,y), (dw.xMin - (0.25*kx),y)]
+
+makeYTickMarks : (Float, Float) -> DataWindow -> Int -> List (List Point)
+makeYTickMarks (kx,ky) dw n =
+    case n == 0 of
+        True -> []
+        False ->
+            List.range 0 (n - 1)
+              |> List.map (\k -> (toFloat k) * (dw.yMax - dw.yMin)/(toFloat (n - 1)))
+              |> List.map (makeYTickMark kx dw)
+              |> List.map (translate (0, -dw.yMax))
+
+makeXTickMark : Float -> DataWindow -> Float -> List Point
+makeXTickMark ky dw x =
+    [(x, dw.yMin), (x, dw.yMin - ky)]
+
+makeXTickMarks : (Float, Float) -> DataWindow -> Int -> List (List Point)
+makeXTickMarks (kx, ky) dw n =
+    case n == 0 of
+        True -> []
+        False ->
+            List.range 0 (n - 1)
+              |> List.map (\k -> (toFloat k) * (dw.xMax - dw.xMin)/(toFloat (n - 1)))
+              |> List.map (makeXTickMark (0.5*ky) dw)
+              |> List.map (translate (dw.xMin, 0))
 --
 -- UTILITY
 --
+
+findMap : (a -> Maybe b) -> List a -> Maybe b
+findMap f list =
+  case list of
+    [] -> Nothing
+    x::xs ->
+      case f x of
+        Just v -> Just v
+        Nothing -> findMap f xs
+
 
 roundTo : Int -> Float -> Float
 roundTo k x =

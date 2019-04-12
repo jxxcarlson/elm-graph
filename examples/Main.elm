@@ -9,31 +9,23 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
 -- import BarChart
-import LineChart
+import LineChart exposing (Option(..))
 
 
 --
 -- DATA
 --
 
-data : List Float
+data  : List (Float, Float)
 data =
-    [ 0, 1, 2, 3, 2, 1, 0 ]
-
-data2 : List (Float, Float)
-data2 =
-    [(0,0), (10, 10), (20,0)]
-
-data3 : List (Float, Float)
-data3 =
     [(-20, 0), (-10,-10), (0,0), (10, 10), (20,0), (30,15), (40,0), (50,-15), (60, 0)]
 
 
 
 graphAttributes =
-    {  color = "blue"
-    , graphHeight = 100
-    , graphWidth = 400
+    {   graphHeight = 100
+      , graphWidth = 400
+      , options = [ Color "blue", XTickmarks 10, YTickmarks 5]
     }
 
 --
@@ -94,8 +86,8 @@ mainColumn : Model -> Element Msg
 mainColumn model =
       column mainColumnStyle
         [ column [ centerX, centerY, spacing 20, padding 40, Background.color (rgb255 240 240 240) ]
-            [ title "Bar Graph Demo"
-            , LineChart.asHtml graphAttributes (LineChart.getDataWindow data3) data3 |> Element.html
+            [ title "Line Chart Demo"
+            , LineChart.asHtml graphAttributes data |> Element.html
            -- , BarChart.asHtml graphAttributes data |> Element.html
             ]
         ]
