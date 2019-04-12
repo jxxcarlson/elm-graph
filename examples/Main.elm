@@ -8,19 +8,20 @@ import Html exposing (Html)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
--- import BarChart
-import LineChart exposing (Option(..))
-
+import Chart exposing(Option(..), barChart, lineChart)
 
 --
 -- DATA
 --
 
+
+
 data  : List (Float, Float)
 data =
     [(-20, 0), (-10,-10), (0,0), (10, 10), (20,0), (30,15), (40,0), (50,-15), (60, 0)]
 
-
+data2 : List Float
+data2 = [5, 10, 20, 30, 20, 20, 5]
 
 graphAttributes =
     {   graphHeight = 100
@@ -28,6 +29,12 @@ graphAttributes =
       , options = [ Color "blue", XTickmarks 10, YTickmarks 5]
     }
 
+barGraphAttributes =
+    {   barHeight = 100
+      , graphWidth = 400
+      , color = "rgb(200,0,0)"
+      , dx = 15
+    }
 --
 -- APP
 --
@@ -85,10 +92,10 @@ view model =
 mainColumn : Model -> Element Msg
 mainColumn model =
       column mainColumnStyle
-        [ column [ centerX, centerY, spacing 20, padding 40, Background.color (rgb255 240 240 240) ]
-            [ title "Line Chart Demo"
-            , LineChart.asHtml graphAttributes data |> Element.html
-           -- , BarChart.asHtml graphAttributes data |> Element.html
+        [ column [ centerX, centerY, spacing 60, padding 40, Background.color (rgb255 240 240 240) ]
+            [ title "Chart Demo"
+             , row [] [ lineChart graphAttributes data |> Element.html ]
+             , row [] [ barChart barGraphAttributes data2 |> Element.html ]
             ]
         ]
 

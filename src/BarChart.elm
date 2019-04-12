@@ -1,4 +1,4 @@
-module BarChart exposing (GraphAttributes, asHtml, asSVG)
+module BarChart exposing (BarGraphAttributes, barChart, barChartAsSVG)
 
 {-| BarChart displays a bar graph of data presented as a list of floats:
 
@@ -20,7 +20,7 @@ line, and the distance from the leading edge of
 one bar to the next.
 
 -}
-type alias GraphAttributes =
+type alias BarGraphAttributes =
     { dx : Float
     , color : String
     , barHeight : Float
@@ -32,23 +32,23 @@ type alias GraphAttributes =
 of GraphAttributes and DataWindow.  If desired, the data window
 can be set from the list of points using getDataWindow.
 -}
-asHtml : GraphAttributes -> List Float -> Html msg
-asHtml ga data =
+barChart : BarGraphAttributes -> List Float -> Html msg
+barChart ga data =
     svg
         [ SA.transform "scale(1,-1)"
         , SA.height <| String.fromFloat (ga.barHeight + 40)
         , SA.width <| String.fromFloat (ga.graphWidth + 40)
         , SA.viewBox <| "-60 -20 " ++ String.fromFloat (ga.graphWidth + 40) ++ " " ++ String.fromFloat (ga.barHeight + 20)
         ]
-        [ asSVG ga data ]
+        [ barChartAsSVG ga data ]
 
 
 {-| Render a list of numbers to Svg as a bar chart using the parameters
 of GraphAttributes and DataWindow.  If desired, the data window
 can be set from the list of points using getDataWindow.
 -}
-asSVG : GraphAttributes -> List Float -> Svg msg
-asSVG gA data =
+barChartAsSVG : BarGraphAttributes -> List Float -> Svg msg
+barChartAsSVG gA data =
     let
         offset =
             String.fromFloat axesOffset
@@ -63,12 +63,12 @@ asSVG gA data =
             String.fromFloat (yMax / 2 |> roundTo 2)
     in
     g [ SA.transform <| "translate(" ++ offset ++ "," ++ offset ++ ")" , SA.fontSize "12px" ] <|
-        svgOfData gA data
+        barChartSvgOfData gA data
             ++ [ abscissa gA, ordinate gA, yTickMark gA 0.0 "0  ", yTickMark gA 0.5 yMaxHalfAsString, yTickMark gA 1.0 yMaxAsString ]
 
 
-svgOfData : GraphAttributes -> List Float -> List (Svg msg)
-svgOfData ga data =
+barChartSvgOfData : BarGraphAttributes -> List Float -> List (Svg msg)
+barChartSvgOfData ga data =
     let
         barWidth =
             0.8 * ga.dx
@@ -135,7 +135,7 @@ axesOffset =
     2
 
 
-abscissa : GraphAttributes -> Svg msg
+abscissa : BarGraphAttributes -> Svg msg
 abscissa gA =
     let
         offset =
@@ -144,7 +144,7 @@ abscissa gA =
     line [ SA.x1 offset, SA.y1 offset, SA.x2 <| String.fromFloat gA.graphWidth, SA.y2 offset, SA.stroke "rgb(80,80,80)", SA.strokeWidth "2" ] []
 
 
-ordinate : GraphAttributes -> Svg msg
+ordinate : BarGraphAttributes -> Svg msg
 ordinate gA =
     let
         offset =
@@ -153,7 +153,7 @@ ordinate gA =
     line [ SA.x1 offset, SA.y1 offset, SA.y2 <| String.fromFloat gA.barHeight, SA.x2 offset, SA.stroke "rgb(80,80,80)", SA.strokeWidth "2" ] []
 
 
-yTickMark : GraphAttributes -> Float -> String -> Svg msg
+yTickMark : BarGraphAttributes -> Float -> String -> Svg msg
 yTickMark gA height label =
     let
         dy =

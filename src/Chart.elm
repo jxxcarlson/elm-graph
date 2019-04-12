@@ -1,11 +1,12 @@
-module LineChart exposing(Point, GraphAttributes, Option(..), DataWindow
-  , getDataWindow,  asHtml, asSVG, asHtmlWithDataWindow, asSVGWithDataWindow)
+module Chart exposing(Point, GraphAttributes, Option(..), DataWindow, getDataWindow,  lineChart, barChart, lineChartWithDataWindow)
 
 
 
-{-| LineChart displays a line graph of data presented as a list of pairs of floats.
+{-| Chart can (1)  display a line graph of data presented as a list of pairs of floats,
+assumed to be in increasing order of their x-coordinates;
+(2) display a bar graph of data presented as a list of floats.
 
-    LineChart.asHtml : GraphAttributes -> List Point -> Html msg
+    lineChart : GraphAttributes -> List Point -> Html msg
 
 **Example:**  Let
 
@@ -18,13 +19,15 @@ module LineChart exposing(Point, GraphAttributes, Option(..), DataWindow
            , options = [ ]
          }
 
-    LineChart.asHtml graphAttributes data
+    lineChart graphAttributes data
 
-For more control over the part of the data displayed, use LineChart.asHtmlWithDataWindow.
+For more control over the part of the data displayed, use Chart.asHtmlWithDataWindow.
 To customize the appearance of the graph, use the options field -- change the color of the
 line, place tick marks on the x and y axes.  For example, one could say options = [Color "blue"].
 
-@docs Point,  GraphAttributes, Option, DataWindow, getDataWindow,  asHtml, asSVG, asHtmlWithDataWindow, asSVGWithDataWindow
+The function Chart.asSVG produces SVG output.  You may not need this, but it is there if you do.w
+
+@docs lineChart, lineChartWithDataWindow, barChart,  Point, DataWindow, getDataWindow, GraphAttributes, Option(..)
 
 -}
 
@@ -33,7 +36,7 @@ import Html exposing (Html)
 import Svg exposing (Svg, g, line, rect, svg, text, text_)
 import Svg.Attributes as SA
 
-{-|  The data to be graphed by LineChart.asHtml is
+{-|  The data to be graphed by Chart.asHtml is
 a List Point.
 
 -}
@@ -87,37 +90,37 @@ type alias ScaleFactor =
 {-| Render a list of points to Html as a line chart using the parameters
 of GraphAttributes.
 -}
-asHtml : GraphAttributes -> List Point -> Html msg
-asHtml ga data =
-  asHtmlWithDataWindow (getDataWindow data) ga data
+lineChart : GraphAttributes -> List Point -> Html msg
+lineChart ga data =
+  lineChartWithDataWindow (getDataWindow data) ga data
 
 
 {-| Render a list of points to SVG as a line chart using the parameters
 of GraphAttributes.
 -}
-asSVG : GraphAttributes ->  List Point -> Svg msg
-asSVG ga data =
-   asSVGWithDataWindow (getDataWindow data) ga data
+lineChartAsSVG : GraphAttributes ->  List Point -> Svg msg
+lineChartAsSVG ga data =
+   lineChartAsSVGWithDataWindow (getDataWindow data) ga data
 
 {-| Render a list of points to Html as a line chart using the parameters
 of GraphAttributes and DataWindow.
 -}
-asHtmlWithDataWindow : DataWindow -> GraphAttributes ->List Point -> Html msg
-asHtmlWithDataWindow dw ga  data =
+lineChartWithDataWindow : DataWindow -> GraphAttributes ->List Point -> Html msg
+lineChartWithDataWindow dw ga  data =
     svg
         [ SA.transform "scale(1,-1)"
         , SA.height <| String.fromFloat (ga.graphHeight + 40)
         , SA.width <| String.fromFloat (ga.graphWidth + 50)
         , SA.viewBox <| "-40 -20 " ++ String.fromFloat (ga.graphWidth + 50) ++ " " ++ String.fromFloat (ga.graphHeight + 40)
         ]
-        [ asSVGWithDataWindow dw ga data ]
+        [ lineChartAsSVGWithDataWindow dw ga data ]
 
 
 {-| Render a list of points to Svg as a line chart using the parameters
 of GraphAttributes and DataWindow.
 -}
-asSVGWithDataWindow: DataWindow -> GraphAttributes ->  List Point -> Svg msg
-asSVGWithDataWindow dw ga data =
+lineChartAsSVGWithDataWindow: DataWindow -> GraphAttributes ->  List Point -> Svg msg
+lineChartAsSVGWithDataWindow dw ga data =
     let
       scaleFactor = getScaleFactor dw ga
 
@@ -156,6 +159,89 @@ asSVGWithDataWindow dw ga data =
     in
       g [] [theData, abscissa, ordinate, boundingBox_, xTickMarks_, yTickMarks_, xLabels, yLabels]
 
+
+--
+-- BARCHART
+--
+
+
+{-| A GraphAttributes value defines the size on
+the screen occupied by the graph, the color of the
+line, and the distance from the leading edge of
+one bar to the next.
+
+-}
+type alias BarGraphAttributes =
+    { dx : Float
+    , color : String
+    , barHeight : Float
+    , graphWidth : Float
+    }
+
+
+{-| Render a list of numbers to Html as a bar chart using the parameters
+of GraphAttributes and DataWindow.  If desired, the data window
+can be set from the list of points using getDataWindow.
+-}
+barChart : BarGraphAttributes -> List Float -> Html msg
+barChart ga data =
+    svg
+        [ SA.transform "scale(1,-1)"
+        , SA.height <| String.fromFloat (ga.barHeight + 40)
+        , SA.width <| String.fromFloat (ga.graphWidth + 40)
+        , SA.viewBox <| "-60 -20 " ++ String.fromFloat (ga.graphWidth + 40) ++ " " ++ String.fromFloat (ga.barHeight + 20)
+        ]
+        [ barChartAsSVG ga data ]
+
+
+{-| Render a list of numbers to Svg as a bar chart using the parameters
+of GraphAttributes and DataWindow.  If desired, the data window
+can be set from the list of points using getDataWindow.
+-}
+barChartAsSVG : BarGraphAttributes -> List Float -> Svg msg
+barChartAsSVG ga data =
+    let
+            barWidth =
+                0.8 * ga.dx
+
+            gbar =
+                \( x, y ) -> barRect ga.color barWidth ga.barHeight x y
+    in
+      List.map gbar (prepare ga.dx data) |> g []
+
+
+prepare : Float -> List Float -> List ( Float, Float )
+prepare dx data =
+    let
+        xs =
+            xCoordinates (List.length data) dx
+
+        ymax =
+            List.maximum data |> Maybe.withDefault 1
+
+        ys =
+            List.map (\y -> y / ymax) data
+    in
+    List.map2 Tuple.pair xs ys
+
+xCoordinates : Int -> Float -> List Float
+xCoordinates n dx =
+    List.map (\i -> toFloat i * dx) (List.range 0 n)
+
+barRect : String -> Float -> Float -> Float -> Float -> Svg msg
+barRect color barWidth barHeight x fraction =
+    rect
+        [ SA.width <| String.fromFloat barWidth
+        , SA.height <| String.fromFloat <| fraction * barHeight
+        , SA.x <| String.fromFloat x
+        , SA.fill color
+        ]
+        []
+
+
+--
+-- INTERNAL
+--
 
 rescale : (Float, Float) -> List Point -> List Point
 rescale (kx, ky) data =
