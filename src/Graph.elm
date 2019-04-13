@@ -2,15 +2,16 @@ module Graph exposing(Point, GraphAttributes, Option(..), DataWindow,  lineChart
 
 
 
-{-| Graph can (1)  display a line graph of data presented as a list of pairs of floats,
-assumed to be in increasing order of their x-coordinates;
-(2) display a bar graph of data presented as a list of floats.
+{-| Graph is a bare-bones package for rendering data as
+    line and bar charts.
 
     lineChart : GraphAttributes -> List Point -> Html msg
 
     barChart : GraphAttributes -> List Float -> Html msg
 
-**Example (Line Graph).**  Let
+**Line Chart Example**
+
+ Let
 
     data =
         [(0,0), (10, 10), (20,0), (30,15), (40,0)]
@@ -27,7 +28,9 @@ For more control over the part of the data displayed, use `lineChartWithDataWind
 To customize the appearance of the graph, use the options field -- change the color of the
 line, place tick marks on the x and y axes.  For example, one could say `options = [Color "blue"]`.
 
-**Example (Bar Graph).** Let
+**Bar Chart Example**
+
+Let
 
     data = [5, 10, 20, 30, 20, 20, 5]
 
