@@ -2,9 +2,10 @@
 
 Chart is a bare-bones package for rendering line and bar charts. 
 
-![Demo](demo.png)
+![(Demo image in GitHub Repo)](demo.png)
 
-Here is how you construct a line chart from some data:
+## Line charts
+
 
     lineData  : List (Float, Float)
     lineData =
@@ -18,7 +19,7 @@ Here is how you construct a line chart from some data:
         
      lineChart lineGraphAttributes lineData
      
-And here is how you construct a bar chart:
+## Bar charts
         
     barData : List Float
     barData = [5, 10, 20, 30, 20, 20, 5]
@@ -31,19 +32,21 @@ And here is how you construct a bar chart:
        
     barChart barGraphAttributes data2
     
+## Demos
+
 For a demo of the package, do
 
-    $ cd examples
+    $ git clone https://github.com/jxxcarlson/simplechart.git
+    $ cd simplechart/examples/
     $ elm make Main.elm
     
 Then open the resulting `index.html` file.  You might also
 look at the gamblers's ruin demo, which uses a manually configured
 data window:
 
-    $ cd examples
     $ elm make GamblersRuin.elm
    
-![Demo](gr.png)
+![(Demo image in GitHub Repo)](gr.png)
     
 
 
