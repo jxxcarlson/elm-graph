@@ -9,6 +9,8 @@ module Graph exposing(Point, GraphAttributes, Option(..), DataWindow,  lineChart
 
     barChart : GraphAttributes -> List Float -> Html msg
 
+For a demo, see https://jxxcarlson.github.io/app/gamblers_ruin.html
+
 **Line Chart Example**
 
  Let

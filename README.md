@@ -1,7 +1,8 @@
 # Graph
 
 Graph is a bare-bones package for rendering data as 
-line and bar charts. 
+line and bar charts.  For a demo, see 
+https://jxxcarlson.github.io/app/gamblers_ruin.html
 
 ![(Demo image in GitHub Repo)](demo.png)
 
