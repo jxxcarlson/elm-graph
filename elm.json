@@ -1,7 +1,7 @@
 {
     "type": "package",
-    "name": "jxxcarlson/elm-chart",
-    "summary": "Simple chart widgets",
+    "name": "jxxcarlson/elm-simplechart",
+    "summary": "Simple charts: line and bar",
     "license": "BSD-3-Clause",
     "version": "1.0.0",
     "exposed-modules": [
