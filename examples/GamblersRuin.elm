@@ -25,7 +25,7 @@ maximumWinnings = 35.0
 lineGraphAttributes =
     {     graphWidth = 400
         , graphHeight = 100
-        , options = [ Color "blue"]
+        , options = [ Color "blue", YTickmarks 8, XTickmarks 5]
     }
 
 --  options = [ Color "blue", XTickmarks 5, YTickmarks 5]
@@ -34,7 +34,7 @@ dataWindow =
     { xMax = 200
     , xMin = 0
     , yMax = maximumWinnings
-    , yMin = -maximumWinnings
+    , yMin = 0
   }
 --
 -- APP

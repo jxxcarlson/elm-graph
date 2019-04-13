@@ -150,7 +150,7 @@ lineChartAsSVGWithDataWindow dw ga data =
       render : List Point -> Svg msg
       render data_ =
           data_
-            |> translate (-dw.xMin, dw.yMax)
+            |> translate (-dw.xMin, -dw.yMin)
             |> rescale scaleFactor
             |> segments
             |> segmentsToSVG ga.options
@@ -158,10 +158,11 @@ lineChartAsSVGWithDataWindow dw ga data =
       renderPlain : List Point -> Svg msg
       renderPlain data_ =
                 data_
-                  |> translate (-dw.xMin, dw.yMax)
+                  |> translate (-dw.xMin, -dw.yMin)
                   |> rescale scaleFactor
                   |> segments
                   |> segmentsToSVG []
+
 
       theData = data |> render
 
@@ -180,7 +181,7 @@ lineChartAsSVGWithDataWindow dw ga data =
       yLabels = makeYLabels scaleFactor dw (yTickmarks ga.options)
 
     in
-      g [] [theData, abscissa, ordinate, boundingBox_, xTickMarks_, yTickMarks_, xLabels, yLabels]
+      g [] [theData, abscissa, ordinate,  boundingBox_, xTickMarks_, yTickMarks_, xLabels, yLabels]
 
 
 --
@@ -509,7 +510,7 @@ makeYTickMarks (kx,ky) render dw n =
             List.range 0 (n - 1)
               |> List.map (\k -> (toFloat k) * (dw.yMax - dw.yMin)/(toFloat (n - 1)))
               |> List.map (makeYTickMark kx dw)
-              |> List.map (translate (0, -dw.yMax))
+              |> List.map (translate (0, dw.yMin))
               |> List.map render
               |> (\x -> g [] x )
 

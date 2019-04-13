@@ -19,7 +19,7 @@ import Chart exposing(Option(..), barChart, lineChart)
 
 lineData  : List (Float, Float)
 lineData =
-    [(-20, 0), (-10,-10), (0,0), (10, 10), (20,0), (30,15), (40,0), (50,-15), (60, 0)]
+    [(-20, 0), (-10,-10), (0,0), (10, 10), (20,0), (30,15), (40,0), (50,-30), (60, 0)]
 
 lineData2  : List (Float, Float)
 lineData2 =
@@ -31,8 +31,9 @@ barData = [5, 10, 20, 30, 20, 20, 5]
 lineGraphAttributes =
     {   graphHeight = 100
       , graphWidth = 400
-      , options = [ Color "blue", XTickmarks 5, YTickmarks 5]
+      , options = [ Color "blue", YTickmarks 4]
     }
+
 lineGraphAttributes2 =
     {   graphHeight = 100
       , graphWidth = 400

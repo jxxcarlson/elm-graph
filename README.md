@@ -36,7 +36,14 @@ For a demo of the package, do
     $ cd examples
     $ elm make Main.elm
     
-The open the resulting `index.html` file.
+Then open the resulting `index.html` file.  You might also
+look at the gamblers's ruin demo, which uses a manually configured
+data window:
+
+   $ cd examples
+   $ elm make GamblersRuin.elm
+   
+ ![Gamblers Ruin Demo](gr.png)
     
 
 
