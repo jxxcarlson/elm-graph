@@ -1,4 +1,4 @@
-module Chart exposing(Point, GraphAttributes, Option(..), DataWindow,  lineChart, barChart, lineChartWithDataWindow)
+module Chart exposing(Point, GraphAttributes, Option(..), DataWindow,  lineChart, lineChartAsSVG, barChart, lineChartWithDataWindow, lineChartAsSVGWithDataWindow, barChartAsSVG)
 
 
 
@@ -39,7 +39,7 @@ line, place tick marks on the x and y axes.  For example, one could say `options
 
     barChart graphAttributes data
 
-@docs lineChart, lineChartWithDataWindow, barChart,  Point, DataWindow, GraphAttributes, Option
+@docs lineChart, lineChartWithDataWindow,  barChart,  Point, DataWindow, GraphAttributes, Option, lineChartAsSVG, lineChartAsSVGWithDataWindow, barChartAsSVG
 
 
 -}
@@ -68,9 +68,13 @@ Examples: (1) [Color "blue"] makes the charted line
   places 10 tick marks along the x-axis and 5
  tick marks along the y-axis, (3) options = [ ]
  produces a bare-bones graph.
+
+ The DeltaX option is used to specify the distnce
+ from the leading edge of one bar to the next
+ in bar graph.
 -}
 type Option =
-  Color String
+    Color String
   | XTickmarks Int
   | YTickmarks Int
   | DeltaX Float
@@ -211,6 +215,7 @@ barChart ga data =
         , SA.viewBox <| "-60 -20 " ++ String.fromFloat (ga.graphWidth + 40) ++ " " ++ String.fromFloat (ga.graphHeight + 20)
         ]
         [ barChartAsSVG ga data ]
+      
 
 
 {-| Render a list of numbers to Svg as a bar chart using the parameters
