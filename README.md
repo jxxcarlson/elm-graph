@@ -1,6 +1,6 @@
-# SimpleChart
+# Graph
 
-SimpleChart is a bare-bones package for rendering line and bar charts. 
+Graph is a bare-bones package for rendering data as line and bar charts. 
 
 ![(Demo image in GitHub Repo)](demo.png)
 

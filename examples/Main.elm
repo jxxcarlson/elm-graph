@@ -8,7 +8,7 @@ import Html exposing (Html)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
-import SimpleChart exposing(Option(..), barChart, lineChart)
+import Graph exposing(Option(..), barChart, lineChart)
 
 
 --
@@ -103,7 +103,7 @@ mainColumn : Model -> Element Msg
 mainColumn model =
       column mainColumnStyle
         [ column [ centerX, centerY, spacing 60, padding 40, Background.color (rgb255 240 240 240) ]
-            [ title "SimpleChart Demo"
+            [ title "Graph Demo"
              , row [] [ lineChart lineGraphAttributes lineData |> Element.html ]
              , row [] [ barChart barGraphAttributes barData |> Element.html ]
 
