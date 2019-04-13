@@ -1,6 +1,6 @@
 {
     "type": "package",
-    "name": "jxxcarlson/elm-chartm",
+    "name": "jxxcarlson/elm-chart",
     "summary": "Simple chart widgets",
     "license": "BSD-3-Clause",
     "version": "1.0.0",

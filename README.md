@@ -1,22 +1,43 @@
-## LineChart
+# Chart
 
-LineChart displays a line graph of data presented as a list of pairs of floats.
+Chart is a bare-bones package for rendering line and bar charts. 
 
-    LineChart.asHtml : GraphAttributes -> List Point -> Html msg
+![Demo](demo.png)
 
-**Example:**  Let
+Here is how you construct a line chart from some data:
 
-    data =
-        [(0,0), (10, 10), (20,0), (30,15), (40,0)]
+    lineData  : List (Float, Float)
+    lineData =
+        [(-20, 0), (-10,-10), (0,0), (10, 10), (20,0), (30,15), (40,0), (50,-15), (60, 0)]
 
-    graphAttributes =
-         {   graphHeight = 100
-           , graphWidth = 400
-           , options = [ ]
-         }
+    lineGraphAttributes =
+        {   graphHeight = 100
+          , graphWidth = 400
+          , options = [ Color "blue", XTickmarks 10, YTickmarks 5]
+        }
+        
+     lineChart lineGraphAttributes lineData
+     
+And here is how you construct a bar chart:
+        
+    barData : List Float
+    barData = [5, 10, 20, 30, 20, 20, 5]
 
-    LineChart.asHtml graphAttributes data
+    barGraphAttributes =
+       {   graphHeight = 100
+         , graphWidth = 400
+         , options = [Color "rgb(200,0,0)", DeltaX 15, YTickmarks 6, XTickmarks 2]
+       }
+       
+    barChart barGraphAttributes data2
+    
+For a demo of the package, do
 
-For more control over the part of the data displayed, use `LineChart.asHtmlWithDataWindow`.
-To customize the appearance of the graph, use the options field -- change the color of the
-line, place tick marks on the x and y axes.  For example, one could say `options = [Color "blue"]`.
+    $ cd examples
+    $ elm make Main.elm
+    
+The open the resulting `index.html` file.
+    
+
+
+

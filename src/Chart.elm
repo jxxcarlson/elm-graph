@@ -1,4 +1,4 @@
-module Chart exposing(Point, GraphAttributes, Option(..), DataWindow, getDataWindow,  lineChart, barChart, lineChartWithDataWindow)
+module Chart exposing(Point, GraphAttributes, Option(..), DataWindow,  lineChart, barChart, lineChartWithDataWindow)
 
 
 
@@ -8,7 +8,9 @@ assumed to be in increasing order of their x-coordinates;
 
     lineChart : GraphAttributes -> List Point -> Html msg
 
-**Example:**  Let
+    barChart : GraphAttributes -> List Float -> Html msg
+
+**Example (Line Chart).**  Let
 
     data =
         [(0,0), (10, 10), (20,0), (30,15), (40,0)]
@@ -21,13 +23,23 @@ assumed to be in increasing order of their x-coordinates;
 
     lineChart graphAttributes data
 
-For more control over the part of the data displayed, use Chart.asHtmlWithDataWindow.
+For more control over the part of the data displayed, use `lineChartWithDataWindow`.
 To customize the appearance of the graph, use the options field -- change the color of the
-line, place tick marks on the x and y axes.  For example, one could say options = [Color "blue"].
+line, place tick marks on the x and y axes.  For example, one could say `options = [Color "blue"]`.
 
-The function Chart.asSVG produces SVG output.  You may not need this, but it is there if you do.w
+**Example (Bar Chart).** Let
 
-@docs lineChart, lineChartWithDataWindow, barChart,  Point, DataWindow, getDataWindow, GraphAttributes, Option
+    data = [5, 10, 20, 30, 20, 20, 5]
+
+    graphAttributes =
+        {   graphHeight = 100
+          , graphWidth = 400
+          , options = [Color "rgb(200,0,0)", DeltaX 15,  XTickmarks 2, YTickmarks 5]
+        }
+
+    barChart graphAttributes data
+
+@docs lineChart, lineChartWithDataWindow, barChart,  Point, DataWindow, GraphAttributes, Option
 
 
 -}
@@ -213,11 +225,77 @@ barChartAsSVG ga data =
 
             gbar =
                 \( x, y ) -> barRect (lineColor ga.options) barWidth ga.graphHeight x y
+
+            ordinate = segmentToSVG [] ((0,0), (0, ga.graphHeight))
+
+            abscissa = segmentToSVG [] ((0,0), (ga.graphWidth, 0))
+
+            xTickmarks2 = bxTickmarks ga
+
+            yTickmarks2 = byTickmarks ga
+
+            (yMax, preparedData) = prepare (deltaX ga.options) data
+
+            yLabels = bMakeYLabels yMax ga
     in
-      List.map gbar (prepare (deltaX ga.options) data) |> g []
+      List.map gbar preparedData ++ [abscissa, ordinate, xTickmarks2, yTickmarks2, yLabels]
+        |> g []
 
 
-prepare : Float -> List Float -> List ( Float, Float )
+byTickmark : Float -> Svg msg
+byTickmark y =
+    segmentToSVG [] ((0,y), (-8, y))
+
+byTickmarks : GraphAttributes -> Svg msg
+byTickmarks ga =
+  let
+     n = yTickmarks ga.options
+  in
+     List.range 0 (n - 1)
+       |> List.map (\k -> (toFloat k) * ga.graphHeight / (toFloat (n - 1)))
+       |> List.map byTickmark
+       |> g []
+
+bxTickmark : Float -> Svg msg
+bxTickmark x =
+    segmentToSVG [] ((x,0), (x, -8))
+
+bxTickmarks : GraphAttributes -> Svg msg
+bxTickmarks ga =
+  let
+     dx = (toFloat <| xTickmarks ga.options) * (deltaX ga.options)
+     n = round <| ga.graphWidth / dx
+  in
+     List.range 0 (n - 1)
+       |> List.map (\k -> (toFloat k) * dx)
+       |> List.map bxTickmark
+       |> g []
+
+bMakeYLabel :  (Float, Float) -> Float -> Svg msg
+bMakeYLabel (yMax, graphHeight) y =
+    let
+        label = String.fromFloat <| roundTo 1 y
+    in
+    text_ [ SA.transform <| "translate(0," ++ "-3" ++ ") scale(1,-1)"
+           , SA.x <| "-30"
+           , SA.y <| String.fromFloat (-y * graphHeight / yMax)
+           , SA.fontSize "9px"]
+         [ text label ]
+
+bMakeYLabels : Float -> GraphAttributes -> Svg msg
+bMakeYLabels  yMax ga =
+    let
+        n = yTickmarks ga.options
+    in
+    case n == 0 of
+            True -> g [] []
+            False ->
+              List.range 0 (n - 1)
+                     |> List.map (\k -> (toFloat k) * yMax / (toFloat (n - 1)))
+                     |> List.map (bMakeYLabel (yMax, ga.graphHeight))
+                |> g []
+
+prepare : Float -> List Float -> (Float, List ( Float, Float ))
 prepare dx data =
     let
         xs =
@@ -229,7 +307,7 @@ prepare dx data =
         ys =
             List.map (\y -> y / ymax) data
     in
-    List.map2 Tuple.pair xs ys
+    (ymax, List.map2 Tuple.pair xs ys)
 
 xCoordinates : Int -> Float -> List Float
 xCoordinates n dx =

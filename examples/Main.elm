@@ -17,14 +17,14 @@ import Chart exposing(Option(..), barChart, lineChart)
 
 
 
-data  : List (Float, Float)
-data =
+lineData  : List (Float, Float)
+lineData =
     [(-20, 0), (-10,-10), (0,0), (10, 10), (20,0), (30,15), (40,0), (50,-15), (60, 0)]
 
-data2 : List Float
-data2 = [5, 10, 20, 30, 20, 20, 5]
+barData : List Float
+barData = [5, 10, 20, 30, 20, 20, 5]
 
-graphAttributes =
+lineGraphAttributes =
     {   graphHeight = 100
       , graphWidth = 400
       , options = [ Color "blue", XTickmarks 10, YTickmarks 5]
@@ -33,7 +33,7 @@ graphAttributes =
 barGraphAttributes =
     {   graphHeight = 100
       , graphWidth = 400
-      , options = [Color "rgb(200,0,0)", DeltaX 15]
+      , options = [Color "rgb(200,0,0)", DeltaX 15, YTickmarks 6, XTickmarks 2]
     }
 --
 -- APP
@@ -94,8 +94,8 @@ mainColumn model =
       column mainColumnStyle
         [ column [ centerX, centerY, spacing 60, padding 40, Background.color (rgb255 240 240 240) ]
             [ title "Chart Demo"
-             , row [] [ lineChart graphAttributes data |> Element.html ]
-             , row [] [ barChart barGraphAttributes data2 |> Element.html ]
+             , row [] [ lineChart lineGraphAttributes lineData |> Element.html ]
+             , row [] [ barChart barGraphAttributes barData |> Element.html ]
 
             ]
         ]
