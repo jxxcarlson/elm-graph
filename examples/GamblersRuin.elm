@@ -10,7 +10,7 @@ import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
 import Element.Border as Border
-import Chart exposing(Option(..), barChart, lineChart, DataWindow)
+import SimpleChart exposing(Option(..), barChart, lineChart, DataWindow)
 import Time
 import Random
 
@@ -158,7 +158,7 @@ mainColumn model =
                title "Gambler's Ruin"
               , row [Font.size 14] [text <| "Get to " ++ (String.fromFloat maximumWinnings) ++ " points for a 1000 dollar bonus"]
             ]
-             , row [] [ Chart.lineChartWithDataWindow dataWindow lineGraphAttributes  model.timeSeries |> Element.html ]
+             , row [] [ SimpleChart.lineChartWithDataWindow dataWindow lineGraphAttributes  model.timeSeries |> Element.html ]
              , row [spacing 12] [startButton model, reStartButton model, status model, el [Font.bold, Font.size 16] (text <| message model)]
 
             ]

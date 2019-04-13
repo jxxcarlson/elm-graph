@@ -1,8 +1,8 @@
-module Chart exposing(Point, GraphAttributes, Option(..), DataWindow,  lineChart, lineChartAsSVG, barChart, lineChartWithDataWindow, lineChartAsSVGWithDataWindow, barChartAsSVG)
+module SimpleChart exposing(Point, GraphAttributes, Option(..), DataWindow,  lineChart, lineChartAsSVG, barChart, lineChartWithDataWindow, lineChartAsSVGWithDataWindow, barChartAsSVG)
 
 
 
-{-| Chart can (1)  display a line graph of data presented as a list of pairs of floats,
+{-| SimpleChart can (1)  display a line graph of data presented as a list of pairs of floats,
 assumed to be in increasing order of their x-coordinates;
 (2) display a bar graph of data presented as a list of floats.
 
@@ -10,7 +10,7 @@ assumed to be in increasing order of their x-coordinates;
 
     barChart : GraphAttributes -> List Float -> Html msg
 
-**Example (Line Chart).**  Let
+**Example (Line SimpleChart).**  Let
 
     data =
         [(0,0), (10, 10), (20,0), (30,15), (40,0)]
@@ -27,7 +27,7 @@ For more control over the part of the data displayed, use `lineChartWithDataWind
 To customize the appearance of the graph, use the options field -- change the color of the
 line, place tick marks on the x and y axes.  For example, one could say `options = [Color "blue"]`.
 
-**Example (Bar Chart).** Let
+**Example (Bar SimpleChart).** Let
 
     data = [5, 10, 20, 30, 20, 20, 5]
 
@@ -92,7 +92,7 @@ type alias DataWindow =
 
 
 
-{-|  The data to be graphed by Chart.asHtml is
+{-|  The data to be graphed by SimpleChart.asHtml is
 a List Point.
 
 -}
