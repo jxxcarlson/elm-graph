@@ -40,10 +40,10 @@ Then open the resulting `index.html` file.  You might also
 look at the gamblers's ruin demo, which uses a manually configured
 data window:
 
-   $ cd examples
-   $ elm make GamblersRuin.elm
+    $ cd examples
+    $ elm make GamblersRuin.elm
    
- ![Gamblers Ruin Demo](gr.png)
+![Demo](gr.png)
     
 
 
