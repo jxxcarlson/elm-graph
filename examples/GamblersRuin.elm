@@ -156,7 +156,7 @@ mainColumn model =
         [ column [ centerX, centerY, spacing 60, padding 40, Background.color (rgb255 240 240 240) ]
             [ column [spacing 8, centerX] [
                title "Gambler's Ruin"
-              , row [Font.size 14] [text <| "Get to " ++ (String.fromFloat maximumWinnings) ++ " points for a 1000 dollar bonus"]
+              , row [Font.size 14] [text <| "Get to " ++ (String.fromFloat maximumWinnings) ++ " points for a 100 dollar bonus"]
             ]
              , row [] [ Graph.lineChartWithDataWindow dataWindow lineGraphAttributes  model.timeSeries |> Element.html ]
              , row [spacing 12] [startButton model, reStartButton model, status model, el [Font.bold, Font.size 16] (text <| message model)]
