@@ -55,7 +55,7 @@ Set the chart parameters. DeltaX controls the width of the bars.
 For a demo of the package, do
 
     $ git clone https://github.com/jxxcarlson/elm-graph.git
-    $ cd simplechart/examples/
+    $ cd elm-graph/examples/
     $ elm make Main.elm
     
 Then open the resulting `index.html` file.  You might also

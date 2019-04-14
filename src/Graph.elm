@@ -3,7 +3,7 @@ module Graph exposing(Point, GraphAttributes, Option(..), DataWindow,  lineChart
 
 
 {-| **Graph** is a bare-bones package for rendering data as
-line and bar charts, both as HTML and as SVG.  
+line and bar charts, both as HTML and as SVG.
 
 For examples, see the REAdME.
 For a demo, see https://jxxcarlson.github.io/app/gamblers_ruin.html
