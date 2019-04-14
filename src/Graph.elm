@@ -2,47 +2,12 @@ module Graph exposing(Point, GraphAttributes, Option(..), DataWindow,  lineChart
 
 
 
-{-| Graph is a bare-bones package for rendering data as
-    line and bar charts.
+{-| **Graph** is a bare-bones package for rendering data as
+line and bar charts, both as HTML and as SVG.  
 
-    lineChart : GraphAttributes -> List Point -> Html msg
-
-    barChart : GraphAttributes -> List Float -> Html msg
-
+For examples, see the REAdME.
 For a demo, see https://jxxcarlson.github.io/app/gamblers_ruin.html
 
-**Line Chart Example**
-
- Let
-
-    data =
-        [(0,0), (10, 10), (20,0), (30,15), (40,0)]
-
-    graphAttributes =
-         {   graphHeight = 100
-           , graphWidth = 400
-           , options = [ ]
-         }
-
-    lineChart graphAttributes data
-
-For more control over the part of the data displayed, use `lineChartWithDataWindow`.
-To customize the appearance of the graph, use the options field -- change the color of the
-line, place tick marks on the x and y axes.  For example, one could say `options = [Color "blue"]`.
-
-**Bar Chart Example**
-
-Let
-
-    data = [5, 10, 20, 30, 20, 20, 5]
-
-    graphAttributes =
-        {   graphHeight = 100
-          , graphWidth = 400
-          , options = [Color "rgb(200,0,0)", DeltaX 15,  XTickmarks 2, YTickmarks 5]
-        }
-
-    barChart graphAttributes data
 
 @docs lineChart, lineChartWithDataWindow,  barChart,  Point, DataWindow, GraphAttributes, Option, lineChartAsSVG, lineChartAsSVGWithDataWindow, barChartAsSVG
 
@@ -115,8 +80,12 @@ type alias ScaleFactor =
     }
 
 
-{-| Render a list of points to Html as a line chart using the parameters
-of GraphAttributes.
+{-| Render a list of points (pairs of floats)
+to Html as a line chart.  using the parameters
+of GraphAttributes.  GraphAttributes controls
+the appearance of the graph -- width, height, color,
+tick marks on the axes.   The x-coordinates of the
+data are assumed to be in increasing order.
 -}
 lineChart : GraphAttributes -> List Point -> Html msg
 lineChart ga data =
@@ -130,8 +99,10 @@ lineChartAsSVG : GraphAttributes ->  List Point -> Svg msg
 lineChartAsSVG ga data =
    lineChartAsSVGWithDataWindow (getDataWindow data) ga data
 
-{-| Render a list of points to Html as a line chart using the parameters
-of GraphAttributes and DataWindow.
+{-| This function is like lineChart, but with the additional
+DataWindow parameter.  A DataWindow defines the range of
+x and y coordinates that are displayed.  In lineChart, the
+DataWindow is deduced from the data presented.
 -}
 lineChartWithDataWindow : DataWindow -> GraphAttributes ->List Point -> Html msg
 lineChartWithDataWindow dw ga  data =
@@ -194,23 +165,9 @@ lineChartAsSVGWithDataWindow dw ga data =
 --
 
 
-{-| A GraphAttributes value defines the size on
-the screen occupied by the graph, the color of the
-line, and the distance from the leading edge of
-one bar to the next.
-
--}
-type alias BarGraphAttributes =
-    { dx : Float
-    , color : String
-    , barHeight : Float
-    , graphWidth : Float
-    }
-
 
 {-| Render a list of numbers to Html as a bar chart using the parameters
-of GraphAttributes and DataWindow.  If desired, the data window
-can be set from the list of points using getDataWindow.
+of GraphAttributes.
 -}
 barChart : GraphAttributes -> List Float -> Html msg
 barChart ga data =
@@ -225,8 +182,7 @@ barChart ga data =
 
 
 {-| Render a list of numbers to Svg as a bar chart using the parameters
-of GraphAttributes and DataWindow.  If desired, the data window
-can be set from the list of points using getDataWindow.
+of GraphAttributes.
 -}
 barChartAsSVG : GraphAttributes -> List Float -> Svg msg
 barChartAsSVG ga data =
@@ -253,90 +209,10 @@ barChartAsSVG ga data =
         |> g []
 
 
-byTickmark : Float -> Svg msg
-byTickmark y =
-    segmentToSVG [] ((0,y), (-8, y))
-
-byTickmarks : GraphAttributes -> Svg msg
-byTickmarks ga =
-  let
-     n = yTickmarks ga.options
-  in
-     List.range 0 (n - 1)
-       |> List.map (\k -> (toFloat k) * ga.graphHeight / (toFloat (n - 1)))
-       |> List.map byTickmark
-       |> g []
-
-bxTickmark : Float -> Svg msg
-bxTickmark x =
-    segmentToSVG [] ((x,0), (x, -8))
-
-bxTickmarks : GraphAttributes -> Svg msg
-bxTickmarks ga =
-  let
-     dx = (toFloat <| xTickmarks ga.options) * (deltaX ga.options)
-     n = round <| ga.graphWidth / dx
-  in
-     List.range 0 (n - 1)
-       |> List.map (\k -> (toFloat k) * dx)
-       |> List.map bxTickmark
-       |> g []
-
-bMakeYLabel :  (Float, Float) -> Float -> Svg msg
-bMakeYLabel (yMax, graphHeight) y =
-    let
-        label = String.fromFloat <| roundTo 1 y
-    in
-    text_ [ SA.transform <| "translate(0," ++ "-3" ++ ") scale(1,-1)"
-           , SA.x <| "-30"
-           , SA.y <| String.fromFloat (-y * graphHeight / yMax)
-           , SA.fontSize "9px"]
-         [ text label ]
-
-bMakeYLabels : Float -> GraphAttributes -> Svg msg
-bMakeYLabels  yMax ga =
-    let
-        n = yTickmarks ga.options
-    in
-    case n == 0 of
-            True -> g [] []
-            False ->
-              List.range 0 (n - 1)
-                     |> List.map (\k -> (toFloat k) * yMax / (toFloat (n - 1)))
-                     |> List.map (bMakeYLabel (yMax, ga.graphHeight))
-                |> g []
-
-prepare : Float -> List Float -> (Float, List ( Float, Float ))
-prepare dx data =
-    let
-        xs =
-            xCoordinates (List.length data) dx
-
-        ymax =
-            List.maximum data |> Maybe.withDefault 1
-
-        ys =
-            List.map (\y -> y / ymax) data
-    in
-    (ymax, List.map2 Tuple.pair xs ys)
-
-xCoordinates : Int -> Float -> List Float
-xCoordinates n dx =
-    List.map (\i -> toFloat i * dx) (List.range 0 n)
-
-barRect : String -> Float -> Float -> Float -> Float -> Svg msg
-barRect color barWidth barHeight x fraction =
-    rect
-        [ SA.width <| String.fromFloat barWidth
-        , SA.height <| String.fromFloat <| fraction * barHeight
-        , SA.x <| String.fromFloat x
-        , SA.fill color
-        ]
-        []
-
+{- Below are functions used to render line and bar charts but which are not exported -}
 
 --
--- INTERNAL
+-- TRANSFORMATIONS
 --
 
 rescale : (Float, Float) -> List Point -> List Point
@@ -354,18 +230,6 @@ boundingBox options dw =
         (0, 0) -> [ ]
         (_, _) ->
           [(dw.xMin, dw.yMin), (dw.xMax, dw.yMin), (dw.xMax, dw.yMax), (dw.xMin, dw.yMax), (dw.xMin, dw.yMin)]
-
--- BASIC SVG ELEMENT
-
-
-
-
-segments : List a -> List (a, a)
-segments list =
-    let
-      n = List.length list
-    in
-    List.map2 Tuple.pair (List.take (n - 1) list ) (List.drop 1 list)
 
 {-| Create a DataWindow from a list of points. This will
 be the smallest rectangle containing the data.
@@ -395,6 +259,16 @@ getScaleFactor dataWindow gA =
     in
      (kx, ky)
 
+--
+-- MANIPULATING AND RENDERING SEGMENTS
+--
+
+segments : List a -> List (a, a)
+segments list =
+    let
+      n = List.length list
+    in
+    List.map2 Tuple.pair (List.take (n - 1) list ) (List.drop 1 list)
 
 
 segmentToSVG : List Option -> Segment -> Svg msg
@@ -457,11 +331,9 @@ yTickmarks_ option =
         _ -> Nothing
 
 
-tickMarkLength = 7.5
-
-makeYTickMark : Float -> DataWindow -> Float -> List Point
-makeYTickMark kx dw y =
-    [(dw.xMin,y), (dw.xMin - (tickMarkLength/kx),y)]
+--
+-- LABELS FOR LINE CHART
+--
 
 makeYLabel : (Float, Float) -> DataWindow -> Float -> Svg msg
 makeYLabel (kx,ky) dw y =
@@ -507,6 +379,17 @@ makeYLabels (kx,ky) dw n =
                   |> List.map (makeYLabel (kx,ky) dw)
                   |> (\x -> g [] x )
 
+
+--
+-- TICK MARKS FOR LINE CHART
+--
+
+tickMarkLength = 7.5
+
+makeYTickMark : Float -> DataWindow -> Float -> List Point
+makeYTickMark kx dw y =
+    [(dw.xMin,y), (dw.xMin - (tickMarkLength/kx),y)]
+
 makeYTickMarks : (Float, Float) -> (List Point -> Svg msg) -> DataWindow -> Int -> Svg msg
 makeYTickMarks (kx,ky) render dw n =
     case n == 0 of
@@ -534,6 +417,109 @@ makeXTickMarks (kx, ky) render dw n =
               |> List.map (translate (dw.xMin, 0))
               |> List.map render
               |> (\x -> g [] x)
+
+
+--
+-- PREPARE DATA FOR BAR CHARTS
+--
+
+prepare : Float -> List Float -> (Float, List ( Float, Float ))
+prepare dx data =
+    let
+        xs =
+            xCoordinates (List.length data) dx
+
+        ymax =
+            List.maximum data |> Maybe.withDefault 1
+
+        ys =
+            List.map (\y -> y / ymax) data
+    in
+    (ymax, List.map2 Tuple.pair xs ys)
+
+xCoordinates : Int -> Float -> List Float
+xCoordinates n dx =
+    List.map (\i -> toFloat i * dx) (List.range 0 n)
+
+
+--
+-- RENDER A BAR
+--
+
+barRect : String -> Float -> Float -> Float -> Float -> Svg msg
+barRect color barWidth barHeight x fraction =
+    rect
+        [ SA.width <| String.fromFloat barWidth
+        , SA.height <| String.fromFloat <| fraction * barHeight
+        , SA.x <| String.fromFloat x
+        , SA.fill color
+        ]
+        []
+
+--
+-- TICMARKS FOR BAR GRAPH
+--
+
+byTickmark : Float -> Svg msg
+byTickmark y =
+    segmentToSVG [] ((0,y), (-8, y))
+
+byTickmarks : GraphAttributes -> Svg msg
+byTickmarks ga =
+  let
+     n = yTickmarks ga.options
+  in
+     List.range 0 (n - 1)
+       |> List.map (\k -> (toFloat k) * ga.graphHeight / (toFloat (n - 1)))
+       |> List.map byTickmark
+       |> g []
+
+bxTickmark : Float -> Svg msg
+bxTickmark x =
+    segmentToSVG [] ((x,0), (x, -8))
+
+bxTickmarks : GraphAttributes -> Svg msg
+bxTickmarks ga =
+  let
+     dx = (toFloat <| xTickmarks ga.options) * (deltaX ga.options)
+     n = round <| ga.graphWidth / dx
+  in
+     List.range 0 (n - 1)
+       |> List.map (\k -> (toFloat k) * dx)
+       |> List.map bxTickmark
+       |> g []
+
+
+--
+-- LABELS FOR BAR GRAPH
+--
+
+bMakeYLabel :  (Float, Float) -> Float -> Svg msg
+bMakeYLabel (yMax, graphHeight) y =
+    let
+        label = String.fromFloat <| roundTo 1 y
+    in
+    text_ [ SA.transform <| "translate(0," ++ "-3" ++ ") scale(1,-1)"
+           , SA.x <| "-30"
+           , SA.y <| String.fromFloat (-y * graphHeight / yMax)
+           , SA.fontSize "9px"]
+         [ text label ]
+
+bMakeYLabels : Float -> GraphAttributes -> Svg msg
+bMakeYLabels  yMax ga =
+    let
+        n = yTickmarks ga.options
+    in
+    case n == 0 of
+            True -> g [] []
+            False ->
+              List.range 0 (n - 1)
+                     |> List.map (\k -> (toFloat k) * yMax / (toFloat (n - 1)))
+                     |> List.map (bMakeYLabel (yMax, ga.graphHeight))
+                |> g []
+
+
+
 --
 -- UTILITY
 --
