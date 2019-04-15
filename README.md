@@ -1,8 +1,12 @@
 # Graph
 
 Graph is a bare-bones package for rendering data as 
-line and bar charts.  For a demo, see 
-https://jxxcarlson.github.io/app/gamblers_ruin.html
+line and bar charts.  Here is  demo:
+[Gambler's Ruin App](https://jxxcarlson.github.io/app/gamblers_ruin.html)
+
+For a more full-featured package for drawing
+line charts, please see [terezka/line-charts](https://package.elm-lang.org/packages/terezka/line-charts/latest/).
+Also of note is [gampleman/elm-visualization](https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/).
 
 ![(Demo image in GitHub Repo)](demo.png)
 
