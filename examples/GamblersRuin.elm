@@ -19,21 +19,19 @@ import Random
 -- DATA
 --
 
-initialStake = 5.0
-maximumWinnings = 35.0
 
 lineGraphAttributes =
     {     graphWidth = 400
-        , graphHeight = 100
-        , options = [ Color "blue", YTickmarks 8, XTickmarks 5]
+        , graphHeight = 150
+        , options = [ Color "blue", YTickmarks 5, XTickmarks 5]
     }
 
 --  options = [ Color "blue", XTickmarks 5, YTickmarks 5]
 
-dataWindow =
+dataWindow model =
     { xMax = 200
     , xMin = 0
-    , yMax = maximumWinnings
+    , yMax = model.winningAmount
     , yMin = 0
   }
 --
@@ -52,7 +50,13 @@ main =
 type alias Model =
     {   timeSeries : List (Float, Float)
       , counter : Int
-      , state : State}
+      , state : State
+      , initialStake : Float
+      , winningAmount : Float
+      , p : Float
+      , pString : String
+      , winningAmountString : String
+      , initialStakeString : String}
 
 type State = Waiting | Running | Paused | Finished
 
@@ -62,6 +66,9 @@ type Msg
     | NewRandomNumber Float
     | Toggle
     | Restart
+    | InputP String
+    | InputWinningAmount String
+    | InputInitialStake String
 
 
 
@@ -72,9 +79,15 @@ type alias Flags =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( { timeSeries = [(0,initialStake)]
+    ( { timeSeries = [(0,5.0)]
       , counter = 0
       , state = Waiting
+      , initialStake = 5.0
+      , winningAmount = 40.0
+      , p = 0.5
+      , pString  = "0.5"
+      , winningAmountString = "40"
+      , initialStakeString = "5"
      }, Cmd.none )
 
 
@@ -89,13 +102,13 @@ update msg model =
             ( model, Cmd.none )
         Tick  _ ->
               ( model
-              , Random.generate NewRandomNumber (Random.float -1 1)
+              , Random.generate NewRandomNumber (Random.float 0 1)
 
               )
 
         NewRandomNumber r_ ->
            let
-               r = case r_ > 0 of
+               r = case r_ <= model.p of
                    True -> 1.0
                    False -> -1.0
                (t,v) = List.head model.timeSeries |> Maybe.withDefault (-1,-1)
@@ -103,9 +116,9 @@ update msg model =
                vv = (t+1, newV)
                nextTimeSeries =
                   case model.state of
-                  Running -> windowedData dataWindow (vv::model.timeSeries)
+                  Running -> windowedData (dataWindow model) (vv::model.timeSeries)
                   _ -> model.timeSeries
-               nextState = case newV <= 0 || newV >= maximumWinnings of
+               nextState = case newV <= 0 || newV >= model.winningAmount of
                    True -> Finished
                    False -> model.state
                nextCounter = case model.state of
@@ -122,7 +135,22 @@ update msg model =
                Finished -> ({ model | state = Finished }, Cmd.none)
 
         Restart ->
-            ( { model | counter = 0, timeSeries = [(0,initialStake)], state = Running}, Cmd.none)
+            ( { model | counter = 0, timeSeries = [(0,model.initialStake)], state = Running}, Cmd.none)
+
+        InputP str ->
+            case String.toFloat str of
+                Nothing -> ( { model | pString = str  }, Cmd.none)
+                Just p ->  ( { model | p = p, pString = str  }, Cmd.none)
+
+        InputInitialStake str ->
+                    case String.toFloat str of
+                        Nothing -> ( { model | initialStakeString = str  }, Cmd.none)
+                        Just s ->  ( { model | initialStake = s, initialStakeString = str  }, Cmd.none)
+
+        InputWinningAmount str ->
+                    case String.toFloat str of
+                        Nothing -> ( { model | winningAmountString = str  }, Cmd.none)
+                        Just wa ->  ( { model | winningAmount = wa, winningAmountString = str  }, Cmd.none)
 
 
 
@@ -156,13 +184,51 @@ mainColumn model =
         [ column [ centerX, centerY, spacing 60, padding 40, Background.color (rgb255 240 240 240) ]
             [ column [spacing 8, centerX] [
                title "Gambler's Ruin"
-              , row [Font.size 14] [text <| "Get to " ++ (String.fromFloat maximumWinnings) ++ " points for a 100 dollar bonus"]
+               , el [Font.size 12] (text "p = probability of winning (0 < p < 1)")
+              , row [Font.size 14,spacing 12] [inputP model, inputInitialStake model, inputWinningAmount model ]
             ]
-             , row [] [ Graph.lineChartWithDataWindow dataWindow lineGraphAttributes  model.timeSeries |> Element.html ]
+             , row [] [ Graph.lineChartWithDataWindow (dataWindow model) lineGraphAttributes  model.timeSeries |> Element.html ]
              , row [spacing 12] [startButton model, reStartButton model, status model, el [Font.bold, Font.size 16] (text <| message model)]
 
             ]
         ]
+
+
+inputP model =
+    Input.text inputStyle
+        { onChange = InputP
+        , text = model.pString
+        , placeholder = Nothing
+        , label = Input.labelLeft [ Font.size 16, moveDown 8 ] (text "p:")
+        }
+
+inputInitialStake model =
+    Input.text inputStyle
+        { onChange = InputInitialStake
+        , text = model.initialStakeString
+        , placeholder = Nothing
+        , label = Input.labelLeft [ Font.size 16, moveDown 8 ] (text "Initial stake:")
+        }
+
+inputWinningAmount model =
+    Input.text inputStyle
+        { onChange = InputWinningAmount
+        , text = model.winningAmountString
+        , placeholder = Nothing
+        , label = Input.labelLeft [ Font.size 16, moveDown 8 ] (text "Winning amount:")
+        }
+inputStyle =
+    [ width (px 60)
+    , height (px 30)
+    --, Background.color (gray 240)
+    -- , Font.color (gray 40)
+    , Font.size 12
+    , Border.width 2
+    ]
+
+gray g = Element.rgb g g g
+
+
 
 status : Model -> Element msg
 status model =
