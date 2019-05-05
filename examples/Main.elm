@@ -33,14 +33,14 @@ barData =
 lineGraphAttributes =
     { graphHeight = 100
     , graphWidth = 400
-    , options = [ Color "blue", YTickmarks 4, Scale 1.0 -1.0 ]
+    , options = [ Color "blue", YTickmarks 4, Scale 1.0 1.0 ]
     }
 
 
 barGraphAttributes =
     { graphHeight = 100
     , graphWidth = 400
-    , options = [ Color "rgb(200,0,0)", DeltaX 15, YTickmarks 6, XTickmarks 2, Scale 1.0 -1.0 ]
+    , options = [ Color "rgb(200,0,0)", DeltaX 15, YTickmarks 6, XTickmarks 2, Scale 1.0 1.0 ]
     }
 
 

@@ -52,7 +52,10 @@ in bar graph.
 
 The Scale option rescales the graph along both the
 x and y axes. Negative parameters flip the graph.
-Thus `Scale 1.0 -1.0` flips the graph in the y direction
+Thus `Scale 1.0 -1.0` flips the graph in the y direction.
+
+An important use of the Scale option is to correct
+the misbehavor of Safari, which presents the graphs upside down (!!)
 
 -}
 type Option
