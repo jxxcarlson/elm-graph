@@ -50,6 +50,10 @@ The DeltaX option is used to specify the distnce
 from the leading edge of one bar to the next
 in bar graph.
 
+The Scale option rescales the graph along both the
+x and y axes. Negative parameters flip the graph.
+Thus `Scale 1.0 -1.0` flips the graph in the y direction
+
 -}
 type Option
     = Color String
@@ -57,7 +61,6 @@ type Option
     | YTickmarks Int
     | DeltaX Float
     | Scale Float Float
-    | Rotate Float
 
 
 {-| A DataWindow is a rectangle which determines
@@ -174,18 +177,40 @@ lineChartAsSVGWithDataWindow dw ga data =
             makeYLabels scaleFactor dw (yTickmarks ga.options)
 
         transformer =
-            SA.transform (buildSVGTransformString ga.options)
+            SA.transform (buildSVGTransformString ga)
     in
         g [ transformer ] [ theData, abscissa, ordinate, boundingBox_, xTickMarks_, yTickMarks_, xLabels, yLabels ]
 
 
-buildSVGTransformString : List Option -> String
-buildSVGTransformString options =
+buildSVGTransformString : GraphAttributes -> String
+buildSVGTransformString ga =
     let
         ( kx, ky ) =
-            scale options
+            scale ga.options
+
+        scaleString =
+            "scale(" ++ (String.fromFloat kx) ++ ", " ++ String.fromFloat ky ++ ")"
+
+        translateY =
+            case ky < 0 of
+                False ->
+                    "0"
+
+                True ->
+                    String.fromFloat -ga.graphHeight
+
+        translateX =
+            case kx < 0 of
+                False ->
+                    "0"
+
+                True ->
+                    String.fromFloat (-ga.graphWidth + 60)
+
+        translateString =
+            "translate(" ++ translateX ++ ", " ++ translateY ++ ")"
     in
-        "scale(" ++ (String.fromFloat kx) ++ ", " ++ String.fromFloat ky ++ ")"
+        scaleString ++ " " ++ translateString
 
 
 
@@ -239,7 +264,7 @@ barChartAsSVG ga data =
             bMakeYLabels yMax ga
 
         transformer =
-            SA.transform (buildSVGTransformString ga.options)
+            SA.transform (buildSVGTransformString ga)
     in
         List.map gbar preparedData
             ++ [ abscissa, ordinate, xTickmarks2, yTickmarks2, yLabels ]
