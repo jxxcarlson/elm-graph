@@ -56,6 +56,8 @@ type Option
     | XTickmarks Int
     | YTickmarks Int
     | DeltaX Float
+    | Scale Float Float
+    | Rotate Float
 
 
 {-| A DataWindow is a rectangle which determines
@@ -170,8 +172,20 @@ lineChartAsSVGWithDataWindow dw ga data =
 
         yLabels =
             makeYLabels scaleFactor dw (yTickmarks ga.options)
+
+        transformer =
+            SA.transform (buildSVGTransformString ga.options)
     in
-        g [] [ theData, abscissa, ordinate, boundingBox_, xTickMarks_, yTickMarks_, xLabels, yLabels ]
+        g [ transformer ] [ theData, abscissa, ordinate, boundingBox_, xTickMarks_, yTickMarks_, xLabels, yLabels ]
+
+
+buildSVGTransformString : List Option -> String
+buildSVGTransformString options =
+    let
+        ( kx, ky ) =
+            scale options
+    in
+        "scale(" ++ (String.fromFloat kx) ++ ", " ++ String.fromFloat ky ++ ")"
 
 
 
@@ -223,10 +237,13 @@ barChartAsSVG ga data =
 
         yLabels =
             bMakeYLabels yMax ga
+
+        transformer =
+            SA.transform (buildSVGTransformString ga.options)
     in
         List.map gbar preparedData
             ++ [ abscissa, ordinate, xTickmarks2, yTickmarks2, yLabels ]
-            |> g []
+            |> g [ transformer ]
 
 
 
@@ -393,6 +410,21 @@ yTickmarks_ option =
     case option of
         YTickmarks k ->
             Just k
+
+        _ ->
+            Nothing
+
+
+scale : List Option -> ( Float, Float )
+scale options =
+    findMap scale_ options |> Maybe.withDefault ( 1.0, 1.0 )
+
+
+scale_ : Option -> Maybe ( Float, Float )
+scale_ option =
+    case option of
+        Scale kx ky ->
+            Just ( kx, ky )
 
         _ ->
             Nothing
