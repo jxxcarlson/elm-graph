@@ -7,11 +7,7 @@ import Html exposing (Html)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
-<<<<<<< HEAD
 import SimpleGraph exposing(Option(..), barChart, lineChart)
-=======
-import Graph exposing (Option(..), barChart, lineChart)
->>>>>>> 59bb862d7c3b164156213583ad025b00a691a694
 
 
 --
@@ -108,16 +104,11 @@ mainColumn : Model -> Element Msg
 mainColumn model =
     column mainColumnStyle
         [ column [ centerX, centerY, spacing 60, padding 40, Background.color (rgb255 240 240 240) ]
-<<<<<<< HEAD
             [ title "SimpleGraph Demo"
              , row [] [ lineChart lineGraphAttributes lineData |> Element.html ]
              , row [] [ barChart barGraphAttributes barData |> Element.html ]
 
-=======
-            [ title "Graph Demo"
-            , row [] [ lineChart lineGraphAttributes lineData |> Element.html ]
-            , row [] [ barChart barGraphAttributes barData |> Element.html ]
->>>>>>> 59bb862d7c3b164156213583ad025b00a691a694
+
             ]
         ]
 

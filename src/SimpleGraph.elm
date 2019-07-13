@@ -1,10 +1,5 @@
-<<<<<<< HEAD:src/SimpleGraph.elm
+
 module SimpleGraph exposing(Point, GraphAttributes, Option(..), DataWindow,  lineChart, lineChartAsSVG, barChart, lineChartWithDataWindow, lineChartAsSVGWithDataWindow, barChartAsSVG)
-
-
-=======
-module Graph exposing (Point, GraphAttributes, Option(..), DataWindow, lineChart, lineChartAsSVG, barChart, lineChartWithDataWindow, lineChartAsSVGWithDataWindow, barChartAsSVG)
->>>>>>> 59bb862d7c3b164156213583ad025b00a691a694:src/Graph.elm
 
 {-| **SimpleGraph** is a bare-bones package for rendering data as
 line and bar charts, both as HTML and as SVG.
@@ -83,11 +78,8 @@ type alias DataWindow =
     }
 
 
-<<<<<<< HEAD:src/SimpleGraph.elm
+
 {-|  The data to be graphed by SimpleGraph.asHtml is
-=======
-{-| The data to be graphed by Graph.asHtml is
->>>>>>> 59bb862d7c3b164156213583ad025b00a691a694:src/Graph.elm
 a List Point.
 -}
 type alias Point =
