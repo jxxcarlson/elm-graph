@@ -1,4 +1,4 @@
-module GamblersRuin exposing (main)
+module GamblersRuin exposing (main, pSuccess)
 
 {- This is a demo of the BarChart package
 -}
@@ -10,7 +10,7 @@ import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
 import Element.Border as Border
-import Graph exposing(Option(..), barChart, lineChart, DataWindow)
+import SimpleGraph exposing(Option(..), barChart, lineChart, DataWindow)
 import Time
 import Random
 
@@ -181,13 +181,14 @@ view model =
 mainColumn : Model -> Element Msg
 mainColumn model =
       column mainColumnStyle
-        [ column [ centerX, centerY, spacing 60, padding 40, Background.color (rgb255 240 240 240) ]
-            [ column [spacing 8, centerX] [
+        [ column [ centerX, centerY, spacing 40, padding 40, Background.color (rgb255 240 240 240) ]
+            [ column [spacing 12, centerX] [
                title "Gambler's Ruin"
-               , el [Font.size 12] (text "p = probability of winning (0 < p < 1)")
+               , el [Font.size 14] (text "p = probability of winning (0 < p < 1)")
               , row [Font.size 14,spacing 12] [inputP model, inputInitialStake model, inputWinningAmount model ]
+              , row [Font.size 14] [el [] (text <| "P = " ++ (String.fromFloat <| roundTo 4 <| pSuccess model))]
             ]
-             , row [] [ Graph.lineChartWithDataWindow (dataWindow model) lineGraphAttributes  model.timeSeries |> Element.html ]
+             , row [] [ SimpleGraph.lineChartWithDataWindow (dataWindow model) lineGraphAttributes  model.timeSeries |> Element.html ]
              , row [spacing 12] [startButton model, reStartButton model, status model, el [Font.bold, Font.size 16] (text <| message model)]
 
             ]
@@ -302,3 +303,19 @@ roundTo k x =
             toFloat k
     in
     x * 10.0 ^ kk |> round |> toFloat |> (\y -> y / 10.0 ^ kk)
+
+pSuccess : Model -> Float
+pSuccess model =
+   pSuccess_ model.p model.initialStake model.winningAmount
+
+
+pSuccess_ : Float -> Float -> Float -> Float
+pSuccess_ p i n =
+    case p == 0.5 of
+        True -> i/n
+        False ->
+            let
+                r = (1 - p)/p
+            in (1 - r^i)/(1 - r^n)
+
+

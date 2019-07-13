@@ -1,6 +1,6 @@
-# Graph
+# SimpleGraph
 
-Graph is a bare-bones package for rendering data as 
+SimpleGraph is a bare-bones package for rendering data as 
 line and bar charts.  Here is  demo:
 [Gambler's Ruin App](https://jxxcarlson.github.io/app/gamblers_ruin.html)
 

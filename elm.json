@@ -3,9 +3,9 @@
     "name": "jxxcarlson/elm-graph",
     "summary": "Simple charts: line and bar",
     "license": "BSD-3-Clause",
-    "version": "1.0.3",
+    "version": "2.0.0",
     "exposed-modules": [
-        "Graph"
+        "SimpleGraph"
     ],
     "elm-version": "0.19.0 <= v < 0.20.0",
     "dependencies": {

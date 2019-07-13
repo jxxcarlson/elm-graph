@@ -1,8 +1,8 @@
-module Graph exposing(Point, GraphAttributes, Option(..), DataWindow,  lineChart, lineChartAsSVG, barChart, lineChartWithDataWindow, lineChartAsSVGWithDataWindow, barChartAsSVG)
+module SimpleGraph exposing(Point, GraphAttributes, Option(..), DataWindow,  lineChart, lineChartAsSVG, barChart, lineChartWithDataWindow, lineChartAsSVGWithDataWindow, barChartAsSVG)
 
 
 
-{-| **Graph** is a bare-bones package for rendering data as
+{-| **SimpleGraph** is a bare-bones package for rendering data as
 line and bar charts, both as HTML and as SVG.
 
 For examples, see the REAdME.
@@ -62,7 +62,7 @@ type alias DataWindow =
 
 
 
-{-|  The data to be graphed by Graph.asHtml is
+{-|  The data to be graphed by SimpleGraph.asHtml is
 a List Point.
 
 -}
