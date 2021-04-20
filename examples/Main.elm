@@ -20,7 +20,8 @@ lineData =
     [ ( -20, 0 ), ( -10, -10 ), ( 0, 0 ), ( 10, 10 ), ( 20, 0 ), ( 30, 15 ), ( 40, 0 ), ( 50, -30 ), ( 60, 0 ) ]
 
 scatterData : List (Float, Float)
-scatterData = [(0,0), (1, 0), (0,1), (1, 1), (0.5,0.5)]
+scatterData = [(0,0), (100, 0), (0,100), (100, 100), (50,50), (50, 70)]
+-- scatterData = [(0,0), (10,10)]
 
 lineData2 : List ( Float, Float )
 lineData2 =

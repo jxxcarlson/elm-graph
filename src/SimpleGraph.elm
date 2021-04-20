@@ -167,6 +167,7 @@ lineChartAsSVGWithDataWindow dw ga data =
         ordinate =
             [ ( dw.xMin, dw.yMin ), ( dw.xMin, dw.yMax ) ] |> renderPlain
 
+        boundingBox_ : Svg msg
         boundingBox_ =
             boundingBox ga.options dw |> renderPlain
 
@@ -255,6 +256,7 @@ barChartAsSVG ga data =
         ordinate =
             segmentToSVG [] ( ( 0, 0 ), ( 0, ga.graphHeight ) )
 
+        abscissa : Svg msg
         abscissa =
             segmentToSVG [] ( ( 0, 0 ), ( ga.graphWidth, 0 ) )
 
@@ -270,6 +272,7 @@ barChartAsSVG ga data =
         yLabels =
             bMakeYLabels yMax ga
 
+        transformer : Svg.Attribute msg
         transformer =
             SA.transform (buildSVGTransformString ga)
     in
@@ -292,7 +295,7 @@ scatterPlot ga data =
         , SA.width <| String.fromFloat (ga.graphWidth + 50)
         , SA.viewBox <| "0 0" ++ String.fromFloat (ga.graphWidth + 50) ++ " " ++ String.fromFloat (ga.graphHeight + 50)
         ]
-        (scatterPlotAsSVG  ga data)
+        [scatterPlotAsSVG  ga data]
 
 
 {-| Render a list of ponts to Svg as a scatter plot using the parameters
@@ -300,18 +303,32 @@ of GraphAttributes.
 -}
 -- scatterPlotAsSVG : GraphAttributes -> List (Float, Float) -> Svg msg
 -- TODO
-scatterPlotAsSVG : { a | options : List Option } -> List Point -> List (Svg msg)
+scatterPlotAsSVG : GraphAttributes -> List Point -> Svg msg
 scatterPlotAsSVG ga data =
     let
         dw = getDataWindow data
 
         diameter =
-            40.0
+            6.0
          -- dot color diameter x y
         dot_ : (Float, Float) -> Svg msg
         dot_ =
             \( x, y ) -> dot (lineColor ga.options) diameter x y
 
+        scaleFactor =
+            getScaleFactor dw ga
+
+        renderPlain : List Point -> Svg msg
+        renderPlain data_ =
+            data_
+                |> translate ( -dw.xMin, -dw.yMin )
+                |> rescale scaleFactor
+                |> segments
+                |> segmentsToSVG []
+
+        boundingBox_ : Svg msg
+        boundingBox_ =
+                boundingBox ga.options dw |> renderPlain
         --ordinate =
         --    segmentToSVG [] ( ( 0, 0 ), ( 0, ga.graphHeight ) )
         --
@@ -327,13 +344,14 @@ scatterPlotAsSVG ga data =
         --yLabels =
         --    bMakeYLabels dw.yMax ga
 
-        --transformer =
-        --    SA.transform (buildSVGTransformString ga)
+        transformer : Svg.Attribute msg
+        transformer =
+            SA.transform (buildSVGTransformString ga)
 
         rendered : List (Svg msg)
         rendered =   List.map dot_ data
     in
-        rendered
+        g [ transformer ]  (rendered ++ [boundingBox_])
 -- ++ [ abscissa, ordinate, xTickmarks2, yTickmarks2, yLabels ]
       -- rendered
 
