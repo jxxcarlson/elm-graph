@@ -308,8 +308,14 @@ scatterPlotAsSVG ga data =
     let
         dw = getDataWindow data
 
+
+
+        xScaleFactor = ga.graphWidth/(dw.xMax - dw.xMin) |> Debug.log "XF"
+        yScaleFactor = ga.graphHeight/(dw.yMax - dw.yMin) |> Debug.log "YF"
+
+
         diameter =
-            6.0
+            4.0
          -- dot color diameter x y
         dot_ : (Float, Float) -> Svg msg
         dot_ =
@@ -328,13 +334,8 @@ scatterPlotAsSVG ga data =
 
         boundingBox_ : Svg msg
         boundingBox_ =
-                boundingBox ga.options dw |> renderPlain
-        --ordinate =
-        --    segmentToSVG [] ( ( 0, 0 ), ( 0, ga.graphHeight ) )
-        --
-        --abscissa =
-        --    segmentToSVG [] ( ( 0, 0 ), ( ga.graphWidth, 0 ) )
-        --
+                boundingBox ga.options {dw | xMax = dw.xMax + diameter/xScaleFactor, yMax = dw.yMax + diameter/yScaleFactor} |> renderPlain
+
         --xTickmarks2 =
         --    bxTickmarks ga
         --
@@ -348,12 +349,13 @@ scatterPlotAsSVG ga data =
         transformer =
             SA.transform (buildSVGTransformString ga)
 
+        rescaledData = List.map (\(x,y) -> (xScaleFactor*x, yScaleFactor*y)) data
+
         rendered : List (Svg msg)
-        rendered =   List.map dot_ data
+        rendered =   List.map dot_ rescaledData
     in
         g [ transformer ]  (rendered ++ [boundingBox_])
--- ++ [ abscissa, ordinate, xTickmarks2, yTickmarks2, yLabels ]
-      -- rendered
+
 
 
 
