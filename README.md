@@ -1,14 +1,13 @@
-# Graph
+# SimpleGraph
 
-Graph is a bare-bones package for rendering data as 
-line and bar charts.  Here is  demo:
+SimpleGraph is a bare-bones package for rendering data as 
+line charts, bar charts, and scatter plots.  Here is  demo:
+
 [Gambler's Ruin App](https://jxxcarlson.github.io/app/gamblers_ruin.html)
 
 For a more full-featured package for drawing
 line charts, please see [terezka/line-charts](https://package.elm-lang.org/packages/terezka/line-charts/latest/).
 Also of note is [gampleman/elm-visualization](https://package.elm-lang.org/packages/gampleman/elm-visualization/latest/).
-
-![(Demo image in GitHub Repo)](demo.png)
 
 The two examples below show how the package is used.  For mere
 details, see the module documentation.
@@ -51,8 +50,10 @@ Set the chart parameters. DeltaX controls the width of the bars.
  Draw the chart. 
        
     barChart barGraphAttributes data2
-    
- 
+
+## 3. Scatter plots
+
+Please see the demo app.
     
 ## Demos
 
@@ -68,8 +69,6 @@ data window:
 
     $ elm make GamblersRuin.elm
    
-![(Demo image in GitHub Repo)](gr.png)
-    
 
 
 

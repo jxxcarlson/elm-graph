@@ -12,7 +12,7 @@ For a demo, see <https://jxxcarlson.github.io/app/gamblers_ruin.html>
 
 ## Making a chart
 
-@docs lineChart, lineChartWithDataWindow, barChart
+@docs lineChart, lineChartWithDataWindow, barChart, scatterPlot
 
 
 ## Types and Options
@@ -22,7 +22,7 @@ For a demo, see <https://jxxcarlson.github.io/app/gamblers_ruin.html>
 
 ## SVG
 
-@docs lineChartAsSVG, lineChartAsSVGWithDataWindow, barChartAsSVG
+@docs lineChartAsSVG, lineChartAsSVGWithDataWindow, barChartAsSVG, scatterPlotAsSVG
 
 -}
 
@@ -282,10 +282,7 @@ barChartAsSVG ga data =
 
 
 
-{-| This function is like lineChart, but with the additional
-DataWindow parameter. A DataWindow defines the range of
-x and y coordinates that are displayed. In lineChart, the
-DataWindow is deduced from the data presented.
+{-| Make a scatter plot of a list points, render as Html
 -}
 scatterPlot : GraphAttributes -> List Point -> Html msg
 scatterPlot ga data =
@@ -298,11 +295,8 @@ scatterPlot ga data =
         [scatterPlotAsSVG  ga data]
 
 
-{-| Render a list of ponts to Svg as a scatter plot using the parameters
-of GraphAttributes.
+{-| Make a scatter plot of a list points, render as SVG
 -}
--- scatterPlotAsSVG : GraphAttributes -> List (Float, Float) -> Svg msg
--- TODO
 scatterPlotAsSVG : GraphAttributes -> List Point -> Svg msg
 scatterPlotAsSVG ga data =
     let
@@ -310,8 +304,8 @@ scatterPlotAsSVG ga data =
 
 
 
-        xScaleFactor = ga.graphWidth/(dw.xMax - dw.xMin) |> Debug.log "XF"
-        yScaleFactor = ga.graphHeight/(dw.yMax - dw.yMin) |> Debug.log "YF"
+        xScaleFactor = ga.graphWidth/(dw.xMax - dw.xMin)
+        yScaleFactor = ga.graphHeight/(dw.yMax - dw.yMin)
 
 
         diameter =
