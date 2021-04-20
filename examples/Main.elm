@@ -7,7 +7,7 @@ import Html exposing (Html)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Font as Font
-import Graph exposing (Option(..), barChart, lineChart)
+import SimpleGraph exposing (Option(..), barChart, lineChart, scatterPlot)
 
 
 --
@@ -19,6 +19,8 @@ lineData : List ( Float, Float )
 lineData =
     [ ( -20, 0 ), ( -10, -10 ), ( 0, 0 ), ( 10, 10 ), ( 20, 0 ), ( 30, 15 ), ( 40, 0 ), ( 50, -30 ), ( 60, 0 ) ]
 
+scatterData : List (Float, Float)
+scatterData = [(0,0), (1, 0), (0,1), (1, 1), (0.5,0.5)]
 
 lineData2 : List ( Float, Float )
 lineData2 =
@@ -36,6 +38,11 @@ lineGraphAttributes =
     , options = [ Color "blue", YTickmarks 4, Scale 1.0 1.0 ]
     }
 
+scatterPlotAttributes =
+    { graphHeight = 200
+    , graphWidth = 200
+    , options = [ Color "blue", YTickmarks 4, Scale 1.0 1.0 ]
+    }
 
 barGraphAttributes =
     { graphHeight = 100
@@ -104,9 +111,10 @@ mainColumn : Model -> Element Msg
 mainColumn model =
     column mainColumnStyle
         [ column [ centerX, centerY, spacing 60, padding 40, Background.color (rgb255 240 240 240) ]
-            [ title "Graph Demo"
+            [ title "SimpleGraph Demo"
             , row [] [ lineChart lineGraphAttributes lineData |> Element.html ]
             , row [] [ barChart barGraphAttributes barData |> Element.html ]
+            , row [] [ scatterPlot scatterPlotAttributes scatterData |> Element.html]
             ]
         ]
 

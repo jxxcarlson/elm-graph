@@ -10,7 +10,7 @@ import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
 import Element.Border as Border
-import Graph exposing(Option(..), barChart, lineChart, DataWindow)
+import SimpleGraph exposing(Option(..), barChart, lineChart, DataWindow)
 import Time
 import Random
 
@@ -187,7 +187,7 @@ mainColumn model =
                , el [Font.size 12] (text "p = probability of winning (0 < p < 1)")
               , row [Font.size 14,spacing 12] [inputP model, inputInitialStake model, inputWinningAmount model ]
             ]
-             , row [] [ Graph.lineChartWithDataWindow (dataWindow model) lineGraphAttributes  model.timeSeries |> Element.html ]
+             , row [] [ SimpleGraph.lineChartWithDataWindow (dataWindow model) lineGraphAttributes  model.timeSeries |> Element.html ]
              , row [spacing 12] [startButton model, reStartButton model, status model, el [Font.bold, Font.size 16] (text <| message model)]
 
             ]

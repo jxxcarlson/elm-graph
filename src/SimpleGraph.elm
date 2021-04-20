@@ -1,6 +1,9 @@
-module Graph exposing (Point, GraphAttributes, Option(..), DataWindow, lineChart, lineChartAsSVG, barChart, lineChartWithDataWindow, lineChartAsSVGWithDataWindow, barChartAsSVG)
+module SimpleGraph exposing (Point, GraphAttributes, Option(..)
+   , DataWindow, lineChart, lineChartAsSVG
+   , barChart, lineChartWithDataWindow, lineChartAsSVGWithDataWindow, barChartAsSVG
+   , scatterPlot, scatterPlotAsSVG)
 
-{-| **Graph** is a bare-bones package for rendering data as
+{-| **SimpleGraph** is a bare-bones package for rendering data as
 line and bar charts, both as HTML and as SVG.
 
 For examples, see the REAdME.
@@ -24,7 +27,7 @@ For a demo, see <https://jxxcarlson.github.io/app/gamblers_ruin.html>
 -}
 
 import Html exposing (Html)
-import Svg exposing (Svg, g, line, rect, svg, text, text_)
+import Svg exposing (Svg, g, line, rect, circle, svg, text, text_)
 import Svg.Attributes as SA
 
 
@@ -77,7 +80,7 @@ type alias DataWindow =
     }
 
 
-{-| The data to be graphed by Graph.asHtml is
+{-| The data to be graphed by SimpleGraph.asHtml is
 a List Point.
 -}
 type alias Point =
@@ -245,6 +248,7 @@ barChartAsSVG ga data =
         barWidth =
             0.8 * (deltaX ga.options)
 
+        gbar : (Float, Float) -> Svg msg
         gbar =
             \( x, y ) -> barRect (lineColor ga.options) barWidth ga.graphHeight x y
 
@@ -272,6 +276,68 @@ barChartAsSVG ga data =
         List.map gbar preparedData
             ++ [ abscissa, ordinate, xTickmarks2, yTickmarks2, yLabels ]
             |> g [ transformer ]
+
+
+
+{-| This function is like lineChart, but with the additional
+DataWindow parameter. A DataWindow defines the range of
+x and y coordinates that are displayed. In lineChart, the
+DataWindow is deduced from the data presented.
+-}
+scatterPlot : GraphAttributes -> List Point -> Html msg
+scatterPlot ga data =
+    svg
+        [ SA.transform "scale(1,-1)"
+        , SA.height <| String.fromFloat (ga.graphHeight + 40)
+        , SA.width <| String.fromFloat (ga.graphWidth + 50)
+        , SA.viewBox <| "0 0" ++ String.fromFloat (ga.graphWidth + 50) ++ " " ++ String.fromFloat (ga.graphHeight + 50)
+        ]
+        (scatterPlotAsSVG  ga data)
+
+
+{-| Render a list of ponts to Svg as a scatter plot using the parameters
+of GraphAttributes.
+-}
+-- scatterPlotAsSVG : GraphAttributes -> List (Float, Float) -> Svg msg
+-- TODO
+scatterPlotAsSVG : { a | options : List Option } -> List Point -> List (Svg msg)
+scatterPlotAsSVG ga data =
+    let
+        dw = getDataWindow data
+
+        diameter =
+            40.0
+         -- dot color diameter x y
+        dot_ : (Float, Float) -> Svg msg
+        dot_ =
+            \( x, y ) -> dot (lineColor ga.options) diameter x y
+
+        --ordinate =
+        --    segmentToSVG [] ( ( 0, 0 ), ( 0, ga.graphHeight ) )
+        --
+        --abscissa =
+        --    segmentToSVG [] ( ( 0, 0 ), ( ga.graphWidth, 0 ) )
+        --
+        --xTickmarks2 =
+        --    bxTickmarks ga
+        --
+        --yTickmarks2 =
+        --    byTickmarks ga
+        --
+        --yLabels =
+        --    bMakeYLabels dw.yMax ga
+
+        --transformer =
+        --    SA.transform (buildSVGTransformString ga)
+
+        rendered : List (Svg msg)
+        rendered =   List.map dot_ data
+    in
+        rendered
+-- ++ [ abscissa, ordinate, xTickmarks2, yTickmarks2, yLabels ]
+      -- rendered
+
+
 
 
 
@@ -618,7 +684,16 @@ barRect color barWidth barHeight x fraction =
         ]
         []
 
-
+dot : String -> Float -> Float -> Float  -> Svg msg
+dot color diameter x y  =
+    rect
+        [ SA.width <| String.fromFloat diameter
+        , SA.height <| String.fromFloat diameter
+        , SA.x <| String.fromFloat x
+        , SA.y <|  String.fromFloat y
+        , SA.fill color
+        ]
+        []
 
 --
 -- TICMARKS FOR BAR GRAPH
